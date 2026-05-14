@@ -117,6 +117,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
             {assignedGoals.map(g => {
               const tasksForGoal = teamTasks.filter((t: any) => t.goalId && String(t.goalId) === String(g.id)) || [];
               const isPending = g.status === 'pending';
+              const ownerName = g.owner || state.managerData?.members?.find((m: any) => String(m.id) === String(g.ownerId))?.name || 'You';
               
               return (
                 <div key={g.id}>
@@ -128,8 +129,8 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                     borderBottom: 'none',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}>
-                    <span>ASSIGNED TO: {(g.owner || 'Unknown').toUpperCase()}</span>
-                    <span style={{ textTransform: 'uppercase' }}>{g.status || 'PENDING'}</span>
+                    <span>ASSIGNED TO: {ownerName.toUpperCase()}</span>
+                    <span style={{ textTransform: 'uppercase' }}>{g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS')}</span>
                   </div>
                   <HPCard padding={0} style={{ borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
                     <div onClick={() => openModal('new_goal', { goal: g })} className="hp-tap">

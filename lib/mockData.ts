@@ -89,8 +89,8 @@ export const HP_PRIORITIES = [
 ];
 
 export const HP_GOALS = [
-  { id: 1, title: 'Launch Apps Redesign', progress: 68, alignment: 92, owner: 'Sari', due: '30 Apr', tone: 'sage', metric: '8 / 12 milestones', scope: 'personal', subGoals: [{ id: 101, title: 'Finalize Hi-Fi Design', done: true }, { id: 102, title: 'Usability Testing', done: false }, { id: 103, title: 'Handoff to Dev', done: false }] },
-  { id: 2, title: 'DS Migration Q2', progress: 42, alignment: 85, owner: 'Team', due: '15 Jun', tone: 'blue', metric: '210 / 500 components', scope: 'team', subGoals: [{ id: 201, title: 'Audit current components', done: true }, { id: 202, title: 'Define design tokens', done: true }, { id: 203, title: 'Build React components', done: false }] },
+  { id: 1, title: 'Launch Apps Redesign', progress: 68, alignment: 92, owner: 'Sari', due: '30 Apr 2026 18:00', dueISO: '2026-04-30T18:00', tone: 'sage', metric: '8 / 12 milestones', scope: 'personal' },
+  { id: 2, title: 'DS Migration Q2', progress: 42, alignment: 85, owner: 'Team', due: '15 Jun 2026 18:00', dueISO: '2026-06-15T18:00', tone: 'blue', metric: '210 / 500 components', scope: 'team' },
   { id: 3, title: 'Mentoring 2 junior designer', progress: 55, alignment: 78, owner: 'Sari', due: 'Ongoing', tone: 'lavender', metric: '11 / 20 sessions', scope: 'personal' },
 ];
 
@@ -149,9 +149,9 @@ export const MANAGER_APPROVAL_TASKS = [
 ];
 
 export const MANAGER_TEAM_GOALS = [
-  { id: 1, title: 'Launch Apps Redesign', progress: 68, members: 3, due: '30 Apr', tone: 'sage', onTrack: true },
-  { id: 2, title: 'DS Migration Q2', progress: 42, members: 5, due: '15 Jun', tone: 'blue', onTrack: false },
-  { id: 3, title: 'User Research Q2', progress: 55, members: 2, due: '30 May', tone: 'lavender', onTrack: true },
+  { id: 1, title: 'Launch Apps Redesign', progress: 68, members: 3, due: '30 Apr 2026 18:00', dueISO: '2026-04-30T18:00', tone: 'sage', onTrack: true },
+  { id: 2, title: 'DS Migration Q2', progress: 42, members: 5, due: '15 Jun 2026 18:00', dueISO: '2026-06-15T18:00', tone: 'blue', onTrack: false },
+  { id: 3, title: 'User Research Q2', progress: 55, members: 2, due: '30 May 2026 18:00', dueISO: '2026-05-30T18:00', tone: 'lavender', onTrack: true },
 ];
 
 export const MANAGER_ONE_ON_ONES = [
