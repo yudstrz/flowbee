@@ -196,7 +196,6 @@ function AppContent() {
       if (tab === 'home')      return <div style={pad}><ManagerHomeScreen openModal={openModal} /></div>;
       if (tab === 'goals')     return <div style={pad}><ManagerGoalsScreen openModal={openModal} /></div>;
       if (tab === 'recognize') return <div style={pad}><ManagerRecognizeScreen openModal={openModal} /></div>;
-      if (tab === 'wellbeing') return <div style={pad}><ManagerWellbeingScreen openModal={openModal} /></div>;
     }
     // HR view
     if (currentRole === 'hr') {

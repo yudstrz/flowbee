@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useHP } from "@/lib/HPContext";
 import { HP_TOKENS, HP_FONT, HP_TEXT } from "@/lib/constants";
 import {
   MANAGER_TEAM_MEMBERS,
-  MANAGER_APPROVAL_TASKS,
-  MANAGER_ONE_ON_ONES,
 } from "@/lib/mockData";
 import HPGlyph from "@/components/ui/HPGlyph";
 import HPCard from "@/components/ui/HPCard";
@@ -16,14 +14,6 @@ import BlobBackground from "@/components/home/BlobBackground";
 import BeeMascot from "@/components/ui/BeeMascot";
 
 interface Props { openModal: (name: string, props?: any) => void; }
-
-const MOOD_COLOR: Record<string, string> = {
-  joy: HP_TOKENS.yellow,
-  calm: HP_TOKENS.sage,
-  tired: HP_TOKENS.coral,
-  stress: '#E85C7A',
-  neutral: HP_TOKENS.inkMute,
-};
 
 interface TeamMember {
   id: string | number;
@@ -36,50 +26,11 @@ interface TeamMember {
   tasks: { done: number; total: number };
 }
 
-interface ApprovalTask {
-  id: number | string;
-  type: string;
-  from: string;
-  desc: string;
-  urgent?: boolean;
-}
-
-interface OneOnOneSession {
-  id: number | string;
-  with: string;
-  date: string;
-  time: string;
-  topic: string;
-  urgent?: boolean;
-  meetLink?: string;
-}
-
 export default function ManagerHomeScreen({ openModal }: Props) {
   const { state, user, awardXP } = useHP();
   const managerData = state?.managerData || { members: [], goals: [], approvals: [] };
-  const { members, goals, approvals: serverApprovals } = managerData;
-  const [localApprovals, setLocalApprovals] = useState<ApprovalTask[] | null>(null);
-
-  const currentApprovals = localApprovals || serverApprovals || [];
-  const teamAtRisk = members.filter((m: TeamMember) => m.status === 'Needs check-in' || m.status === 'At risk');
-  const avgWellbeing = members.length > 0 ? Math.round(members.reduce((a: number, b: TeamMember) => a + b.wellbeing, 0) / members.length) : 0;
-
-  const handleApprove = async (id: number | string) => {
-    if (!user) return;
-    try {
-      const res = await fetch("/api/admin/approve-goal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goalId: id, status: 'approved', adminId: user.id })
-      });
-      if (res.ok) {
-        setLocalApprovals(currentApprovals.filter((a: any) => a.id !== id));
-        awardXP('approve_goal', 'Menyetujui target KPI anggota tim');
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const { members, goals } = managerData;
+  const avgProgress = goals.length > 0 ? Math.round(goals.reduce((a: number, b: any) => a + Number(b.progress), 0) / goals.length) : 0;
 
   if (!user || !state) return null;
 
@@ -135,23 +86,32 @@ export default function ManagerHomeScreen({ openModal }: Props) {
               </div>
             </div>
 
-            {/* Team health bar */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-              {[
-                { label: 'Wellbeing Tim', value: `${avgWellbeing}`, suffix: '/100', color: HP_TOKENS.sage, icon: '🌱' },
-                { label: 'Approval', value: `${currentApprovals.length}`, suffix: ' pending', color: currentApprovals.length > 0 ? HP_TOKENS.coral : HP_TOKENS.sage, icon: '⏳' },
-                { label: 'At Risk', value: `${teamAtRisk.length}`, suffix: ' org', color: teamAtRisk.length > 0 ? HP_TOKENS.coral : HP_TOKENS.sage, icon: '⚠️' },
-              ].map(s => (
-                <div key={s.label} style={{
-                  background: HP_TOKENS.lineSoft, borderRadius: 16, padding: '12px 10px', textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
-                  <div style={{ fontFamily: HP_FONT, fontWeight: 900, fontSize: 20, color: s.color }}>
-                    {s.value}<span style={{ fontSize: 10, color: HP_TOKENS.inkMute }}>{s.suffix}</span>
+            {/* Team health bar - Only showing OKR Progress now */}
+            <div style={{
+              background: HP_TOKENS.lineSoft, borderRadius: 20, padding: '16px 20px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ fontSize: 24 }}>🎯</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>RATA-RATA PROGRES OKR TIM</div>
+                  <div style={{ fontFamily: HP_FONT, fontWeight: 900, fontSize: 22, color: HP_TOKENS.blue, marginTop: -2 }}>
+                    {avgProgress}<span style={{ fontSize: 14, color: HP_TOKENS.inkMute }}>%</span>
                   </div>
-                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 2 }}>{s.label}</div>
                 </div>
-              ))}
+              </div>
+              <div style={{ width: 60, height: 60, position: 'relative' }}>
+                 {/* Simple progress ring indicator if needed, but text is enough */}
+                 <div style={{ 
+                    position: 'absolute', inset: 0, borderRadius: '50%', 
+                    border: `4px solid ${HP_TOKENS.blue}20`,
+                 }} />
+                 <div style={{ 
+                    position: 'absolute', inset: 0, borderRadius: '50%', 
+                    border: `4px solid ${HP_TOKENS.blue}`,
+                    clipPath: `inset(0 ${100 - avgProgress}% 0 0)` // Placeholder for circular progress
+                 }} />
+              </div>
             </div>
           </div>
         </div>
@@ -172,7 +132,7 @@ export default function ManagerHomeScreen({ openModal }: Props) {
         </button>
 
         <div style={{ marginTop: 16 }}>
-          <SectionHeader icon="people" label="Status Tim Hari Ini" count={`${members.length} orang`} action="Lihat semua" onAction={() => {}} />
+          <SectionHeader icon="people" label="Status Tim Hari Ini" count={`${members.length} orang`} />
           <HPCard padding={14}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {members.map((m: TeamMember, i: number) => (
@@ -186,68 +146,17 @@ export default function ManagerHomeScreen({ openModal }: Props) {
                     <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{m.name}</div>
                     <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontSize: 11 }}>{m.role}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {/* task progress */}
-                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>
-                      {m.tasks.done}/{m.tasks.total}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ ...HP_TEXT.small, fontWeight: 800, color: HP_TOKENS.inkSoft }}>
+                      {m.tasks.done}/{m.tasks.total} Task
                     </div>
-                    {/* mood */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <HPGlyph name={m.glyph || 'check'} size={18} color={HP_TOKENS.ink} />
-          </div>
-                    {/* status badge */}
-                    <div style={{
-                      fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 8, fontFamily: HP_FONT,
-                      background: m.statusTone === 'sage' ? HP_TOKENS.sageSoft : m.statusTone === 'yellow' ? HP_TOKENS.yellowSoft : HP_TOKENS.coralSoft,
-                      color: m.statusTone === 'sage' ? HP_TOKENS.sage : m.statusTone === 'yellow' ? '#8A6814' : HP_TOKENS.coral,
-                    }}>
-                      {m.status}
-                    </div>
+                    <HPGlyph name="chevronRight" size={14} color={HP_TOKENS.line} />
                   </div>
                 </div>
               ))}
             </div>
           </HPCard>
         </div>
-
-        {/* Approvals */}
-        {currentApprovals.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <SectionHeader icon="target" label="Perlu Approval" count={String(currentApprovals.length)} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {currentApprovals.map((task: any) => (
-                <HPCard key={task.id} padding={14} style={{ border: task.urgent ? `1.5px solid ${HP_TOKENS.coral}` : undefined }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-                      background: task.urgent ? HP_TOKENS.coralSoft : HP_TOKENS.blueSoft,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <HPGlyph name={task.urgent ? 'leaf' : 'calendar'} size={18} color={task.urgent ? HP_TOKENS.coral : HP_TOKENS.blue} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      {task.urgent && (
-                        <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.coral, marginBottom: 2 }}>URGENT</div>
-                      )}
-                      <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{task.type} · {task.from}</div>
-                      <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkSoft, marginTop: 2 }}>{task.desc}</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => handleApprove(task.id)} className="hp-tap" style={{
-                        padding: '6px 12px', borderRadius: 10, border: 'none', background: HP_TOKENS.sage,
-                        color: '#fff', fontFamily: HP_FONT, fontWeight: 800, fontSize: 12, cursor: 'pointer',
-                      }}>Setuju</button>
-                      <button className="hp-tap" style={{
-                        padding: '6px 10px', borderRadius: 10, border: `1px solid ${HP_TOKENS.line}`,
-                        background: 'transparent', fontFamily: HP_FONT, fontWeight: 700, fontSize: 12, cursor: 'pointer', color: HP_TOKENS.inkSoft
-                      }}>Tunda</button>
-                    </div>
-                  </div>
-                </HPCard>
-              ))}
-            </div>
-          </div>
-        )}
 
 
 

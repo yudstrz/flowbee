@@ -22,7 +22,6 @@ const TAB_CONFIG: Record<UserRole, Array<{ key: string; label: string; icon: str
     { key: 'home',      label: 'Dashboard',  icon: 'home' },
     { key: 'goals',     label: 'Tim & OKR',  icon: 'target' },
     { key: 'recognize', label: 'Rewards',    icon: 'trophy' },
-    { key: 'wellbeing', label: 'Wellbeing',  icon: 'leaf' },
   ],
   hr: [
     { key: 'home',      label: 'Dashboard',  icon: 'home' },
