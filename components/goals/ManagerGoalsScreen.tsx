@@ -140,7 +140,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                     <div style={{ padding: '12px 16px', background: HP_TOKENS.paper, borderTop: `1px solid ${HP_TOKENS.line}` }}>
                       <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.inkMute, marginBottom: 12 }}>EVIDENCE (TUGAS HARIAN ANGGOTA)</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {tasksForGoal.map(t => (
+                        {tasksForGoal.map((t: any) => (
                           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div style={{ width: 8, height: 8, borderRadius: 4, background: t.verified ? HP_TOKENS.sage : t.done ? HP_TOKENS.blue : HP_TOKENS.line }} />
                             <div style={{ flex: 1 }}>
@@ -228,7 +228,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
             onAction={() => openModal('manage_priorities')}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {personalTasks.map(t => (
+            {personalTasks.map((t: any) => (
               <HPCard key={t.id} padding={14}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button 
