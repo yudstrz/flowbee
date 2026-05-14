@@ -279,7 +279,7 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
           </div>
         )}
 
-        {parentOptions.length > 0 && (
+        {parentOptions.length > 0 && scope !== 'employee' && (
           <div style={{ marginTop: 24 }}>
             <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontWeight: 700, letterSpacing: 0.5 }}>HUBUNGKAN KE PARENT OKR</div>
             <select
