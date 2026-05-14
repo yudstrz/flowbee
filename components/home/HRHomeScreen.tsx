@@ -120,45 +120,6 @@ export default function HRHomeScreen({ openModal }: Props) {
           Check-in Office
         </button>
 
-        {/* At-Risk Alert */}
-        {atRiskEmployees.length > 0 && (
-          <div style={{
-            marginTop: 14,
-            background: `linear-gradient(135deg, ${HP_TOKENS.coralSoft}, #FFF0EE)`,
-            borderRadius: 20, padding: '16px 18px',
-            border: `1.5px solid ${HP_TOKENS.coral}40`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <div style={{ fontSize: 22 }}>⚠️</div>
-              <div>
-                <div style={{ ...HP_TEXT.h, fontSize: 14, color: HP_TOKENS.coral }}>
-                  {atRiskEmployees.length} Karyawan Perlu Perhatian
-                </div>
-                <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkSoft, fontSize: 12, marginTop: 1 }}>
-                  Wellbeing atau engagement di bawah threshold
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {atRiskEmployees.map((e: AtRiskEmployee) => (
-                <div key={e.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  background: '#fff', borderRadius: 12, padding: '10px 12px',
-                }}>
-                  <HPAvatar name={e.name} size={32} color={HP_TOKENS.coral} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{e.name}</div>
-                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>{e.role} · {e.dept}</div>
-                  </div>
-                  <div style={{ fontSize: 16 }}>{e.mood}</div>
-                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.coral, fontWeight: 800 }}>
-                    WB: {e.wellbeing}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
 
 

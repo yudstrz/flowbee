@@ -145,6 +145,21 @@ async function seed() {
       });
     }
 
+    // 7. Rewards
+    console.log("- Adding rewards...");
+    const initialRewards = [
+      { id: "rw_1", title: "Cuti Tambahan 1 Hari", points: 2000, cat: "Wellbeing", tone: "blue", stock: 10 },
+      { id: "rw_2", title: "Lunch with CEO", points: 5000, cat: "Growth", tone: "yellow", stock: 2 },
+      { id: "rw_3", title: "Voucher Kopi 50rb", points: 500, cat: "Daily", tone: "sage", stock: 50 },
+    ];
+
+    for (const r of initialRewards) {
+      await db.execute({
+        sql: `INSERT INTO rewards (id, title, points_cost, category, tone, glyph, description, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [r.id, r.title, r.points, r.cat, r.tone, "gift", "Reward spesial untuk tim.", r.stock]
+      });
+    }
+
     console.log("✅ Seeding complete!");
   } catch (error) {
     console.error("❌ Seeding failed:", error);
