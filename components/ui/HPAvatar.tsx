@@ -9,6 +9,7 @@ interface HPAvatarProps {
   color?: string;
   levelProgress?: number; // 0 to 1
   rank?: string;
+  image?: string;
 }
 
 export default function HPAvatar({ 
@@ -16,10 +17,15 @@ export default function HPAvatar({
   size = 36, 
   color,
   levelProgress = 0,
-  rank
+  rank,
+  image
 }: HPAvatarProps) {
-  const { user } = useHP();
+  const { user: currentUser } = useHP();
   
+  // Use provided image, or if none, only use currentUser's image if this avatar is for the currentUser
+  // But wait, it's safer to just use the 'image' prop if provided.
+  const avatarToDisplay = image || (name === currentUser?.name ? currentUser?.avatarImage : null);
+
   const initials = name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
   const palette = [HP_TOKENS.sage, HP_TOKENS.blue, HP_TOKENS.coral, HP_TOKENS.lavender, '#B5884A'];
   const bg = color || palette[name.charCodeAt(0) % palette.length];
@@ -64,7 +70,7 @@ export default function HPAvatar({
         width: size, 
         height: size, 
         borderRadius: size / 2,
-        background: user?.avatarImage ? 'transparent' : bg, 
+        background: avatarToDisplay ? 'transparent' : bg, 
         color: '#fff',
         display: 'flex', 
         alignItems: 'center', 
@@ -78,9 +84,9 @@ export default function HPAvatar({
         zIndex: 1,
         overflow: 'hidden',
       }}>
-        {user?.avatarImage ? (
+        {avatarToDisplay ? (
           <img 
-            src={user.avatarImage} 
+            src={avatarToDisplay} 
             alt={name} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
           />

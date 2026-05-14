@@ -191,7 +191,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
                 className="hp-tap"
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <HPAvatar name={u.name} size={44} />
+                  <HPAvatar name={u.name} size={44} image={u.avatar_image} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ ...HP_TEXT.h, fontSize: 15 }}>{u.name}</div>

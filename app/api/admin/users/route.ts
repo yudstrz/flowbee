@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized. Only HR and Managers can view user lists." }, { status: 403 });
     }
 
-    const res = await db.execute("SELECT id, name, email, role, level, points, job_title, department, manager_id, password_hash FROM users ORDER BY created_at DESC");
+    const res = await db.execute("SELECT id, name, email, role, level, points, job_title, department, manager_id, password_hash, avatar_image FROM users ORDER BY created_at DESC");
     
     return NextResponse.json({ users: res.rows });
   } catch (error) {

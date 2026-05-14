@@ -51,7 +51,7 @@ export default function EditUserModal({ onClose, user, managers, onSave, onDelet
         
         {/* User Identity Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, background: HP_TOKENS.paper, borderRadius: 20 }}>
-          <HPAvatar name={user.name} size={60} />
+          <HPAvatar name={user.name} size={60} image={user.avatar_image} />
           <div>
             <div style={{ ...HP_TEXT.h, fontSize: 18 }}>{user.name}</div>
             <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontWeight: 700 }}>{user.email}</div>
