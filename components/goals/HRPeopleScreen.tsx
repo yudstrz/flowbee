@@ -334,7 +334,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
                   <input 
                     type="time" 
                     value={state?.workSchedule?.start || "08:00"}
-                    onChange={(e) => updateState({ workSchedule: { start: e.target.value, end: state?.workSchedule?.end ?? '17:00', breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
+                    onChange={(e) => updateState({ workSchedule: { ...state?.workSchedule, start: e.target.value, end: state?.workSchedule?.end ?? '17:00', breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
                     style={inputStyle}
                   />
                 </div>
@@ -343,7 +343,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
                   <input 
                     type="time" 
                     value={state?.workSchedule?.end || "17:00"}
-                    onChange={(e) => updateState({ workSchedule: { start: state?.workSchedule?.start ?? '08:00', end: e.target.value, breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
+                    onChange={(e) => updateState({ workSchedule: { ...state?.workSchedule, start: state?.workSchedule?.start ?? '08:00', end: e.target.value, breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
                     style={inputStyle}
                   />
                 </div>
@@ -358,7 +358,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
                   <input 
                     type="time" 
                     value={state?.workSchedule?.breakStart || "12:00"}
-                    onChange={(e) => updateState({ workSchedule: { start: state?.workSchedule?.start ?? '08:00', end: state?.workSchedule?.end ?? '17:00', breakStart: e.target.value, breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
+                    onChange={(e) => updateState({ workSchedule: { ...state?.workSchedule, start: state?.workSchedule?.start ?? '08:00', end: state?.workSchedule?.end ?? '17:00', breakStart: e.target.value, breakEnd: state?.workSchedule?.breakEnd ?? '13:00' } })}
                     style={inputStyle}
                   />
                 </div>
@@ -367,7 +367,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
                   <input 
                     type="time" 
                     value={state?.workSchedule?.breakEnd || "13:00"}
-                    onChange={(e) => updateState({ workSchedule: { start: state?.workSchedule?.start ?? '08:00', end: state?.workSchedule?.end ?? '17:00', breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: e.target.value } })}
+                    onChange={(e) => updateState({ workSchedule: { ...state?.workSchedule, start: state?.workSchedule?.start ?? '08:00', end: state?.workSchedule?.end ?? '17:00', breakStart: state?.workSchedule?.breakStart ?? '12:00', breakEnd: e.target.value } })}
                     style={inputStyle}
                   />
                 </div>
