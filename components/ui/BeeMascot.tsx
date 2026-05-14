@@ -38,7 +38,7 @@ export default function BeeMascot({ mood = 'happy', size = 80, showSpeech }: Bee
         </div>
       )}
       
-      {/* Kawaii Bee Mascot */}
+      {/* 3D Cute Bee Mascot Image */}
       <div style={{
         width: size,
         height: size,
@@ -48,71 +48,16 @@ export default function BeeMascot({ mood = 'happy', size = 80, showSpeech }: Bee
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        {/* Wings */}
-        <div style={{
-          position: 'absolute',
-          top: '15%',
-          left: '20%',
-          width: '30%',
-          height: '40%',
-          background: 'rgba(255,255,255,0.8)',
-          borderRadius: '50% 50% 0 50%',
-          transform: 'rotate(-20deg)',
-          border: '1px solid #ddd'
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '15%',
-          right: '20%',
-          width: '30%',
-          height: '40%',
-          background: 'rgba(255,255,255,0.8)',
-          borderRadius: '50% 50% 50% 0',
-          transform: 'rotate(20deg)',
-          border: '1px solid #ddd'
-        }} />
-
-        {/* Body */}
-        <div style={{
-          width: '70%',
-          height: '60%',
-          background: '#FDB913',
-          borderRadius: '40%',
-          position: 'relative',
-          overflow: 'hidden',
-          border: '2px solid #333',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {/* Stripes */}
-          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: '15%', background: '#333' }} />
-          <div style={{ position: 'absolute', left: '60%', top: 0, bottom: 0, width: '15%', background: '#333' }} />
-          
-          {/* Face */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '20%', 
-            zIndex: 2, 
-            marginTop: '-5%',
-            transition: 'all 0.3s'
-          }}>
-            <div style={{ width: 6, height: 6, background: '#333', borderRadius: '50%' }} />
-            <div style={{ width: 6, height: 6, background: '#333', borderRadius: '50%' }} />
-          </div>
-          
-          {/* Blush */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '40%', 
-            zIndex: 2, 
-            marginTop: 4
-          }}>
-            <div style={{ width: 4, height: 2, background: '#FFB6C1', borderRadius: '50%', opacity: 0.8 }} />
-            <div style={{ width: 4, height: 2, background: '#FFB6C1', borderRadius: '50%', opacity: 0.8 }} />
-          </div>
-        </div>
+        <img 
+          src="/cute-bee.png" 
+          alt="Bee Mascot" 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'contain',
+            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.1))'
+          }} 
+        />
       </div>
 
       <style jsx global>{`
