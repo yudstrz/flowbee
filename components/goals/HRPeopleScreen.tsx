@@ -410,13 +410,11 @@ export default function HRPeopleScreen({ openModal }: Props) {
       {activeTab === 'contacts' && (
         <>
           <SectionHeader icon="phone" label="Kontak Organisasi" action="+ Tambah" onAction={() => {
-            const name = prompt("Nama Kontak:");
-            const role = prompt("Divisi/Peran:");
-            const email = prompt("Email:");
-            const phone = prompt("No Telepon:");
-            if (name && phone) {
-              updateState({ contacts: [...(state?.contacts || []), { id: Date.now().toString(), name, role: role || '', email: email || '', phone }] });
-            }
+            openModal('contact_editor', {
+              onSave: (newContact: any) => {
+                updateState({ contacts: [...(state?.contacts || []), newContact] });
+              }
+            });
           }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {(state?.contacts || []).map(contact => (

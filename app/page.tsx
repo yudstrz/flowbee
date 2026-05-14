@@ -67,6 +67,8 @@ import TakeSurveyModal from "@/components/modals/TakeSurveyModal";
 import AttendanceScannerModal from "@/components/modals/AttendanceScannerModal";
 import OKRDictionaryModal from "@/components/modals/OKRDictionaryModal";
 import ManageContactsModal from "@/components/modals/ManageContactsModal";
+import RewardEditorModal from "@/components/modals/RewardEditorModal";
+import ContactEditorModal from "@/components/modals/ContactEditorModal";
 
 
 // ─── Role pill badge colors ──────────────────────────────────────────────────
@@ -308,6 +310,8 @@ function AppContent() {
       {modal?.name === 'attendance_scanner' && <AttendanceScannerModal onClose={closeModal} />}
       {modal?.name === 'okr_dictionary'   && <OKRDictionaryModal onClose={closeModal} />}
       {modal?.name === 'manage_contacts' && <ManageContactsModal onClose={closeModal} />}
+      {modal?.name === 'reward_editor'   && <RewardEditorModal onClose={closeModal} {...modal.props} />}
+      {modal?.name === 'contact_editor'  && <ContactEditorModal onClose={closeModal} {...modal.props} />}
 
     </div>
   );

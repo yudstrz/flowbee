@@ -73,7 +73,7 @@ async function seed() {
       const teamId = teams.find(t => t.name === u.team)?.id || null;
       const passHash = await bcrypt.hash(u.pass, 10);
       await db.execute({
-        sql: `INSERT INTO users (id, email, name, role, password_hash, job_title, team_id, points, level, rank) 
+        sql: `INSERT OR REPLACE INTO users (id, email, name, role, password_hash, job_title, team_id, points, level, rank) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [u.id, u.email, u.name, u.role, passHash, u.title, teamId, u.points, Math.floor(u.points/100)+1, 'D'],
       });
@@ -148,15 +148,15 @@ async function seed() {
     // 7. Rewards
     console.log("- Adding rewards...");
     const initialRewards = [
-      { id: "rw_1", title: "Cuti Tambahan 1 Hari", points: 2000, cat: "Wellbeing", tone: "blue", stock: 10 },
-      { id: "rw_2", title: "Lunch with CEO", points: 5000, cat: "Growth", tone: "yellow", stock: 2 },
-      { id: "rw_3", title: "Voucher Kopi 50rb", points: 500, cat: "Daily", tone: "sage", stock: 50 },
+      { title: "Cuti Tambahan 1 Hari", points: 2000, cat: "Wellbeing", tone: "blue", stock: 10 },
+      { title: "Lunch with CEO", points: 5000, cat: "Growth", tone: "yellow", stock: 2 },
+      { title: "Voucher Kopi 50rb", points: 500, cat: "Daily", tone: "sage", stock: 50 },
     ];
 
     for (const r of initialRewards) {
       await db.execute({
-        sql: `INSERT INTO rewards (id, title, points_cost, category, tone, glyph, description, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        args: [r.id, r.title, r.points, r.cat, r.tone, "gift", "Reward spesial untuk tim.", r.stock]
+        sql: `INSERT INTO rewards (title, points_cost, category, tone, glyph, description, stock) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [r.title, r.points, r.cat, r.tone, "gift", "Reward spesial untuk tim.", r.stock]
       });
     }
 

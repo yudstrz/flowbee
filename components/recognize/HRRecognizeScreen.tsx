@@ -3,15 +3,10 @@
 import React, { useState } from "react";
 import { useHP } from "@/lib/HPContext";
 import { HP_TOKENS, HP_FONT, HP_TEXT } from "@/lib/constants";
-import { HR_FEED, HR_ALL_EMPLOYEES, HP_REWARDS, ORG_REWARDS_CATALOG } from "@/lib/mockData";
 import HPGlyph from "@/components/ui/HPGlyph";
 import HPCard from "@/components/ui/HPCard";
-import HPAvatar from "@/components/ui/HPAvatar";
 import ScreenHeader from "@/components/ui/ScreenHeader";
 import SectionHeader from "@/components/home/SectionHeader";
-import AppreciationCard from "@/components/recognize/AppreciationCard";
-import RewardCard from "@/components/recognize/RewardCard";
-import StatBlock from "@/components/recognize/StatBlock";
 
 interface Props { openModal: (name: string, props?: any) => void; }
 
@@ -22,33 +17,23 @@ export default function HRRecognizeScreen({ openModal }: Props) {
   const rewards = state.rewards || [];
 
   const handleAddReward = () => {
-    const title = prompt("Nama Reward:");
-    const points = prompt("Harga (Koin):");
-    const stock = prompt("Stok:");
-    if (title && points && stock) {
-      const newReward = {
-        id: Date.now(),
-        title,
-        points: parseInt(points),
-        stock: parseInt(stock),
-        description: "Baru ditambahkan oleh HR",
-        tone: 'blue',
-        category: 'General'
-      };
-      updateState({ rewards: [...rewards, newReward] });
-    }
+    openModal('reward_editor', {
+      onSave: (newReward: any) => {
+        updateState({ rewards: [...rewards, newReward] });
+      }
+    });
   };
 
   const handleEditReward = (r: any) => {
-    const newTitle = prompt("Nama Reward:", r.title);
-    const newPoints = prompt("Harga (Koin):", String(r.points));
-    const newStock = prompt("Stok:", String(r.stock));
-    if (newTitle && newPoints && newStock) {
-      const updated = rewards.map((item: any) => 
-        item.id === r.id ? { ...item, title: newTitle, points: parseInt(newPoints), stock: parseInt(newStock) } : item
-      );
-      updateState({ rewards: updated });
-    }
+    openModal('reward_editor', {
+      reward: r,
+      onSave: (updatedReward: any) => {
+        const updated = rewards.map((item: any) => 
+          item.id === r.id ? updatedReward : item
+        );
+        updateState({ rewards: updated });
+      }
+    });
   };
 
   const handleDeleteReward = (id: number | string) => {
