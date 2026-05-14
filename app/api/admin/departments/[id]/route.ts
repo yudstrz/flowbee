@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/turso";
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { requesterId } = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
     if (!requesterId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
