@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HP_TOKENS, HP_FONT, HP_TEXT } from "@/lib/constants";
 import Modal from "@/components/ui/Modal";
 import HPGlyph from "@/components/ui/HPGlyph";
