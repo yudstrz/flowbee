@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --hp-yellow: #FDB913;
+  --hp-yellow-dark: #E5A800;
+  --hp-yellow-soft: #FFFDF0;
+  --hp-blue: #4A90E2;
+  --hp-blue-soft: #EBF4FF;
+  --hp-amber: #F2994A;
+  --hp-amber-soft: #FEF6ED;
+  --hp-honey: #D4A373;
+  --hp-honey-soft: #F9F3EC;
+  --hp-gold: #FFD700;
+  --hp-paper: #FFFBF5;
+  --hp-ink: #1F1D1B;
+  --hp-ink-mute: #6B645E;
+  --hp-line: rgba(31,29,27,0.08);
+  --hp-line-soft: rgba(31,29,27,0.04);
+  --hp-card: #FFFFFF;
+  --hp-font: 'Nunito', -apple-system, system-ui, sans-serif;
+  --hp-font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  background: var(--hp-paper);
+  min-height: 100vh;
+  font-family: var(--hp-font);
+  color: var(--hp-ink);
+  overflow-x: hidden;
+}
+
+body {
+  padding: 0;
+}
+
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Animations */
+@keyframes hpFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hpSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes hpRise { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes hpSparkle { 0%, 100% { opacity: 0; transform: scale(0.6) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(180deg); } }
+@keyframes hpFloatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 80% { opacity: 1; transform: translateY(-28px) scale(1.05); } 100% { opacity: 0; transform: translateY(-40px) scale(0.9); } }
+
+/* Utilities */
+.hp-stagger > * { animation: hpRise 420ms cubic-bezier(.2,.8,.2,1) backwards; }
+.hp-stagger > *:nth-child(1) { animation-delay: 60ms; }
+.hp-stagger > *:nth-child(2) { animation-delay: 140ms; }
+.hp-stagger > *:nth-child(3) { animation-delay: 220ms; }
+.hp-stagger > *:nth-child(4) { animation-delay: 300ms; }
+.hp-stagger > *:nth-child(5) { animation-delay: 380ms; }
+
+.hp-tap { transition: transform 180ms cubic-bezier(.2,.8,.2,1); }
+.hp-tap:active { transform: scale(0.96); }
+
+/* Layout Components */
+.hp-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Scrollbar Hide */
+::-webkit-scrollbar { width: 0; height: 0; }
+/* PWA Components */
+.hp-install-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--hp-ink);
+  color: var(--hp-yellow);
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  z-index: 1000;
+  animation: hpSlideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hp-install-btn:hover {
+  transform: translateY(-2px);
+  background: #000000;
+}
