@@ -41,14 +41,16 @@ export default function SectionHeader({
           onClick={onAction}
           className="hp-tap" 
           style={{ 
-            background: 'none', 
+            background: HP_TOKENS.lavender, 
+            borderRadius: 10,
+            padding: '6px 12px',
             border: 'none', 
             fontFamily: HP_FONT, 
             fontWeight: 800, 
-            fontSize: 13, 
-            color: HP_TOKENS.inkMute, 
+            fontSize: 12, 
+            color: '#fff', 
             cursor: 'pointer',
-            opacity: 0.7
+            boxShadow: '0 4px 12px rgba(123,107,181,0.2)'
           }}
         >
           {action}

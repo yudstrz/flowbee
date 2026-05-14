@@ -141,13 +141,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
         </form>
 
         <div style={{ marginTop: 24, ...HP_TEXT.small, color: HP_TOKENS.inkMute }}>
-          {isLogin ? "Belum punya akun?" : "Sudah punya akun?"}{" "}
-          <span
-            onClick={() => setIsLogin(!isLogin)}
-            style={{ color: HP_TOKENS.blue, fontWeight: 800, cursor: "pointer" }}
-          >
-            {isLogin ? "Daftar di sini" : "Login di sini"}
-          </span>
+          Butuh akses? Hubungi tim HR untuk pembuatan akun.
         </div>
 
         {!isLogin && (
