@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useHP } from "@/lib/HPContext";
 import { HP_TOKENS, HP_FONT, HP_TEXT } from "@/lib/constants";
 import HPGlyph from "@/components/ui/HPGlyph";
 
