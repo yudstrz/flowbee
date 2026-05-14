@@ -42,7 +42,7 @@ const calculateLevelProgress = (points: number) => {
 };
 
 export default function HomeScreen({ openModal }: any) {
-  const { state, updateState, updateUser, user, syncSkillProgress, awardXP } = useHP();
+  const { state: rawState, updateState, updateUser, user: rawUser, syncSkillProgress, awardXP } = useHP();
   const [greeting, setGreeting] = useState('');
   const [confetti, setConfetti] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
@@ -63,7 +63,7 @@ export default function HomeScreen({ openModal }: any) {
 
     // Time Check for Reminders
     const checkTime = () => {
-      if (!state?.workSchedule) return;
+      if (!rawState?.workSchedule) return;
       const now = new Date();
       const currentMins = now.getHours() * 60 + now.getMinutes();
 
@@ -72,9 +72,9 @@ export default function HomeScreen({ openModal }: any) {
         return hh * 60 + mm;
       };
 
-      const breakStart = parseTime(state.workSchedule.breakStart);
-      const workEnd = parseTime(state.workSchedule.end);
-      const midDayTime = parseTime(state.workSchedule.midDayCheckInTime || "12:00");
+      const breakStart = parseTime(rawState.workSchedule.breakStart);
+      const workEnd = parseTime(rawState.workSchedule.end);
+      const midDayTime = parseTime(rawState.workSchedule.midDayCheckInTime || "12:00");
 
       // Check break reminder (15 mins before)
       if (currentMins >= breakStart - 15 && currentMins < breakStart) {
@@ -97,10 +97,10 @@ export default function HomeScreen({ openModal }: any) {
 
     // AI Nudge Logic (Duolingo Style)
     const generateNudge = () => {
-      if (!state) return;
+      if (!rawState) return;
       
       const now = new Date();
-      const lastAct = state.lastActivityDate ? new Date(state.lastActivityDate) : now;
+      const lastAct = rawState.lastActivityDate ? new Date(rawState.lastActivityDate) : now;
       const hoursInactive = (now.getTime() - lastAct.getTime()) / (1000 * 60 * 60);
 
       // 1. Inactivity Check (> 3 hours)
@@ -113,7 +113,7 @@ export default function HomeScreen({ openModal }: any) {
       }
 
       // 2. Fatigue/Stress Check
-      if (state.mood === 'tired' || state.mood === 'stress') {
+      if (rawState.mood === 'tired' || rawState.mood === 'stress') {
         setCoachNudge({
           text: "Kamu terlihat lelah. Coba istirahat 5 menit atau minum air putih dulu yuk. Kesehatanmu prioritas utama! 💧",
           type: 'support'
@@ -137,17 +137,19 @@ export default function HomeScreen({ openModal }: any) {
     generateNudge();
     
     return () => clearInterval(interval);
+  }, [rawState?.workSchedule, rawState?.mood, rawState?.lastActivityDate]);
+
   const beeMood = useMemo(() => {
-    if (!state) return 'happy';
+    if (!rawState) return 'happy';
     const now = new Date();
-    const lastAct = state.lastActivityDate ? new Date(state.lastActivityDate) : now;
+    const lastAct = rawState.lastActivityDate ? new Date(rawState.lastActivityDate) : now;
     const hoursInactive = (now.getTime() - lastAct.getTime()) / (1000 * 60 * 60);
 
     if (hoursInactive > 4) return 'sad';
-    if (state.mood === 'tired' || state.mood === 'burnout') return 'sleepy';
-    if (state.mood === 'stress' || state.mood === 'anxious') return 'surprised';
+    if (rawState.mood === 'tired' || rawState.mood === 'burnout') return 'sleepy';
+    if (rawState.mood === 'stress' || rawState.mood === 'anxious') return 'surprised';
     return 'happy';
-  }, [state]);
+  }, [rawState]);
 
   const togglePriority = useCallback((id: number) => {
     updateState((s: any) => {
@@ -239,12 +241,9 @@ export default function HomeScreen({ openModal }: any) {
     });
   }, [updateState, awardXP]);
 
-  const aiInsights = useMemo(() => generateAIInsights(state, user), [state, user]);
+  const aiInsights = useMemo(() => generateAIInsights(rawState, rawUser), [rawState, rawUser]);
 
-
-
-
-  const levelProgress = calculateLevelProgress(user?.points || 0);
+  const levelProgress = calculateLevelProgress(rawUser?.points || 0);
 
   const energyHint = (e: string) => {
     if (e === 'low') return 'Energimu sedang rendah 🌱 Mulai dari task ringan dulu — handoff sinkron ikon cocok sekarang.';
@@ -252,6 +251,8 @@ export default function HomeScreen({ openModal }: any) {
     return 'Energi tinggi — cocok untuk deep work 🔥 Blok 90 menit tanpa gangguan?';
   };
 
+  const state = rawState;
+  const user = rawUser;
   if (!state || !user) return null;
 
   const { mood, energy, priorities } = state;
