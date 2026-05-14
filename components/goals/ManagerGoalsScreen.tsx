@@ -116,65 +116,111 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {assignedGoals.map(g => {
               const tasksForGoal = teamTasks.filter((t: any) => t.goalId && String(t.goalId) === String(g.id)) || [];
-              const isPending = g.status === 'pending';
-              const ownerName = g.owner || state.managerData?.members?.find((m: any) => String(m.id) === String(g.ownerId))?.name || 'You';
+              const ownerName = g.owner || state.managerData?.members?.find((m: any) => String(m.id) === String(g.ownerId))?.name || 'Team Member';
               
+              const pendingVerification = tasksForGoal.filter((t: any) => t.done && !t.verified);
+              const verifiedTasks = tasksForGoal.filter((t: any) => t.verified);
+              const activeTasks = tasksForGoal.filter((t: any) => !t.done);
+
               return (
-                <div key={g.id}>
+                <div key={g.id} style={{ marginBottom: 12 }}>
                   <div style={{ 
-                    padding: '6px 12px', background: isPending ? HP_TOKENS.yellowWash : g.status === 'approved' ? HP_TOKENS.sageWash : HP_TOKENS.coralWash, 
-                    borderRadius: '16px 16px 0 0', 
-                    fontSize: 10, fontWeight: 900, color: isPending ? '#8A6814' : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral, 
-                    border: `1px solid ${HP_TOKENS.line}`,
-                    borderBottom: 'none',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    padding: '10px 16px', 
+                    background: g.status === 'pending' ? HP_TOKENS.yellowWash : g.status === 'approved' ? HP_TOKENS.sageWash : HP_TOKENS.coralWash, 
+                    borderRadius: '20px 20px 0 0', 
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    border: `1.5px solid ${HP_TOKENS.line}`, borderBottom: 'none'
                   }}>
-                    <span>ASSIGNED TO: {ownerName.toUpperCase()}</span>
-                    <span style={{ textTransform: 'uppercase' }}>{g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS')}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <HPAvatar name={ownerName} size={28} />
+                      <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.ink }}>
+                        {ownerName.toUpperCase()}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      fontSize: 9, fontWeight: 900, padding: '4px 10px', borderRadius: 99,
+                      background: g.status === 'pending' ? HP_TOKENS.yellow : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral,
+                      color: '#fff'
+                    }}>
+                      {g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS').toUpperCase()}
+                    </div>
                   </div>
-                  <HPCard padding={0} style={{ borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
+
+                  <HPCard padding={0} style={{ borderRadius: '0 0 20px 20px', overflow: 'hidden', borderTop: 'none' }}>
                     <div onClick={() => openModal('new_goal', { goal: g })} className="hp-tap">
                       <GoalCard g={g} />
                     </div>
-                    
-                    {/* KPI Review Section */}
-                    <div style={{ padding: '12px 16px', background: HP_TOKENS.paper, borderTop: `1px solid ${HP_TOKENS.line}` }}>
-                      <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.inkMute, marginBottom: 12 }}>EVIDENCE (TUGAS HARIAN ANGGOTA)</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {tasksForGoal.map((t: any) => (
-                          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: 4, background: t.verified ? HP_TOKENS.sage : t.done ? HP_TOKENS.blue : HP_TOKENS.line }} />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? HP_TOKENS.ink : HP_TOKENS.inkMute }}>{t.title}</div>
-                              <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>Oleh: {t.userName}</div>
-                            </div>
-                            {t.done && !t.verified && (
-                              <button 
-                                onClick={() => handleVerifyTask(t.id, g.id)}
-                                className="hp-tap"
-                                style={{
-                                  padding: '4px 12px', borderRadius: 8, border: 'none',
-                                  background: HP_TOKENS.sage, color: '#fff', fontSize: 10, fontWeight: 900, cursor: 'pointer'
-                                }}
-                              >
-                                ACC
-                              </button>
-                            )}
-                            {t.verified && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: HP_TOKENS.sage }}>
-                                <HPGlyph name="check" size={14} color={HP_TOKENS.sage} />
-                                <span style={{ fontSize: 10, fontWeight: 900 }}>VERIFIED</span>
-                              </div>
-                            )}
+
+                    <div style={{ padding: '16px', background: HP_TOKENS.paper, borderTop: `1px solid ${HP_TOKENS.lineSoft}` }}>
+                      {/* Section: Pending Verification */}
+                      {pendingVerification.length > 0 && (
+                        <div style={{ marginBottom: 20 }}>
+                          <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.yellow, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <HPGlyph name="zap" size={12} color={HP_TOKENS.yellow} />
+                            MENUNGGU PERSETUJUAN (ACC)
                           </div>
-                        ))}
-                        {tasksForGoal.length === 0 && <div style={{ fontSize: 11, color: HP_TOKENS.inkMute, fontStyle: 'italic' }}>Belum ada tugas harian yang dihubungkan ke KPI ini.</div>}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {pendingVerification.map((t: any) => (
+                              <div key={t.id} style={{ 
+                                display: 'flex', alignItems: 'center', gap: 12, padding: 12, 
+                                background: '#fff', borderRadius: 12, border: `1.5px solid ${HP_TOKENS.yellow}40` 
+                              }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700 }}>{t.title}</div>
+                                  <div style={{ fontSize: 10, color: HP_TOKENS.inkMute, marginTop: 2 }}>Selesai hari ini</div>
+                                </div>
+                                <button 
+                                  onClick={() => handleVerifyTask(t.id, g.id)}
+                                  className="hp-tap"
+                                  style={{
+                                    padding: '8px 16px', borderRadius: 10, border: 'none',
+                                    background: HP_TOKENS.sage, color: '#fff', fontSize: 11, fontWeight: 900, cursor: 'pointer'
+                                  }}
+                                >
+                                  ACC
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Section: Active Progress */}
+                      <div style={{ marginBottom: 20 }}>
+                        <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.inkMute, marginBottom: 10 }}>PROGRESS HARI INI</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {activeTasks.map((t: any) => (
+                            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, opacity: 0.7 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: 3, background: HP_TOKENS.line }} />
+                              <div style={{ fontSize: 12, color: HP_TOKENS.inkSoft, fontWeight: 600 }}>{t.title}</div>
+                            </div>
+                          ))}
+                          {activeTasks.length === 0 && <div style={{ fontSize: 11, color: HP_TOKENS.inkMute, fontStyle: 'italic' }}>Tidak ada task aktif saat ini.</div>}
+                        </div>
                       </div>
 
-                      {/* Approval Buttons */}
-                      {isPending && (
-                        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                          <button 
+                      {/* Section: History */}
+                      {verifiedTasks.length > 0 && (
+                        <div>
+                          <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.inkFade, marginBottom: 10 }}>HISTORY SELESAI</div>
+                          <div style={{ display: 'flex', flexDirection: 'wrap', gap: 6, flexWrap: 'wrap' }}>
+                            {verifiedTasks.map((t: any) => (
+                              <div key={t.id} style={{ 
+                                padding: '4px 10px', borderRadius: 8, background: HP_TOKENS.lineSoft,
+                                display: 'flex', alignItems: 'center', gap: 6, opacity: 0.6
+                              }}>
+                                <HPGlyph name="check" size={10} color={HP_TOKENS.sage} />
+                                <span style={{ fontSize: 10, fontWeight: 700, color: HP_TOKENS.inkSoft }}>{t.title}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Global Goal Approval (Only if pending) */}
+                      {g.status === 'pending' && (
+                        <div style={{ display: 'flex', gap: 10, marginTop: 24, borderTop: `1px dashed ${HP_TOKENS.line}`, paddingTop: 16 }}>
+                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               updateState((s: any) => ({
@@ -184,8 +230,8 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                             }}
                             className="hp-tap"
                             style={{
-                              flex: 1, padding: '10px', borderRadius: 12, border: 'none',
-                              background: HP_TOKENS.sage, color: '#fff', fontFamily: HP_FONT, fontWeight: 800, fontSize: 11, cursor: 'pointer'
+                              flex: 1, padding: '14px', borderRadius: 14, border: 'none',
+                              background: HP_TOKENS.sage, color: '#fff', fontFamily: HP_FONT, fontWeight: 900, fontSize: 13, cursor: 'pointer'
                             }}
                           >
                             Approve KPI
@@ -200,8 +246,8 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                             }}
                             className="hp-tap"
                             style={{
-                              flex: 1, padding: '10px', borderRadius: 12, border: `1.5px solid ${HP_TOKENS.coral}`,
-                              background: '#fff', color: HP_TOKENS.coral, fontFamily: HP_FONT, fontWeight: 800, fontSize: 11, cursor: 'pointer'
+                              flex: 1, padding: '14px', borderRadius: 14, border: `1.5px solid ${HP_TOKENS.coral}`,
+                              background: '#fff', color: HP_TOKENS.coral, fontFamily: HP_FONT, fontWeight: 900, fontSize: 13, cursor: 'pointer'
                             }}
                           >
                             Reject
