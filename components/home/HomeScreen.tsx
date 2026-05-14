@@ -260,6 +260,7 @@ export default function HomeScreen({ openModal }: any) {
   const done = priorities.filter((p: any) => p.done).length;
   const total = priorities.length;
 
+  return (
     <div style={{ position: 'relative', minHeight: '100%', paddingBottom: 120, fontFamily: HP_FONT }}>
       <BlobBackground colors={[HP_TOKENS.yellowWash, '#fff', HP_TOKENS.paper]}/>
       <Confetti show={confetti}/>
