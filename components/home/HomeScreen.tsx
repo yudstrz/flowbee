@@ -35,9 +35,10 @@ interface HomeScreenProps {
   openModal: (name: string, props?: any) => void;
 }
 
-const iconBtnStyle: React.CSSProperties = {
-  position: 'relative', width: 40, height: 40, borderRadius: 20, border: `1px solid ${HP_TOKENS.line}`,
-  background: HP_TOKENS.card, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+const calculateLevelProgress = (points: number) => {
+  if (points < 1000) return (points % 100) / 100;
+  if (points < 4000) return ((points - 1000) % 300) / 300;
+  return ((points - 4000) % 1000) / 1000;
 };
 
 export default function HomeScreen({ openModal }: any) {
@@ -136,26 +137,6 @@ export default function HomeScreen({ openModal }: any) {
     generateNudge();
     
     return () => clearInterval(interval);
-  }, [state?.workSchedule, state?.mood, state?.lastActivityDate]);
-
-
-
-  if (!state || !user) return null;
-
-  const { mood, energy, priorities } = state;
-  const moodObj = HP_MOODS.find(m => m.key === mood);
-  const energyObj = HP_ENERGY.find(e => e.key === energy);
-  const done = priorities.filter((p: any) => p.done).length;
-  const total = priorities.length;
-
-  const calculateLevelProgress = (points: number) => {
-    if (points < 1000) return (points % 100) / 100;
-    if (points < 4000) return ((points - 1000) % 300) / 300;
-    return ((points - 4000) % 1000) / 1000;
-  };
-
-  const levelProgress = calculateLevelProgress(user.points);
-
   const beeMood = useMemo(() => {
     if (!state) return 'happy';
     const now = new Date();
@@ -171,6 +152,7 @@ export default function HomeScreen({ openModal }: any) {
   const togglePriority = useCallback((id: number) => {
     updateState((s: any) => {
       const pIndex = s.priorities.findIndex((p: any) => p.id === id);
+      if (pIndex === -1) return s;
       const priority = s.priorities[pIndex];
       const wasDone = priority.done;
       
@@ -225,6 +207,7 @@ export default function HomeScreen({ openModal }: any) {
   const toggleHabit = useCallback((name: string) => {
     updateState((s: any) => {
       const hIndex = s.habits.findIndex((h: any) => h.name === name);
+      if (hIndex === -1) return s;
       const habit = s.habits[hIndex];
       const wasDone = habit.done;
       
@@ -256,16 +239,27 @@ export default function HomeScreen({ openModal }: any) {
     });
   }, [updateState, awardXP]);
 
+  const aiInsights = useMemo(() => generateAIInsights(state, user), [state, user]);
+
+
+
+
+  const levelProgress = calculateLevelProgress(user?.points || 0);
+
   const energyHint = (e: string) => {
     if (e === 'low') return 'Energimu sedang rendah 🌱 Mulai dari task ringan dulu — handoff sinkron ikon cocok sekarang.';
     if (e === 'mid') return 'Energi sedang pas untuk kolaborasi 🌿 Review wireframe dulu, kirim handoff setelah lunch.';
     return 'Energi tinggi — cocok untuk deep work 🔥 Blok 90 menit tanpa gangguan?';
   };
 
-  // Memoize AI insights at top level (not inside JSX)
-  const aiInsights = useMemo(() => generateAIInsights(state, user), [state, user]);
+  if (!state || !user) return null;
 
-  return (
+  const { mood, energy, priorities } = state;
+  const moodObj = HP_MOODS.find(m => m.key === mood);
+  const energyObj = HP_ENERGY.find(e => e.key === energy);
+  const done = priorities.filter((p: any) => p.done).length;
+  const total = priorities.length;
+
     <div style={{ position: 'relative', minHeight: '100%', paddingBottom: 120, fontFamily: HP_FONT }}>
       <BlobBackground colors={[HP_TOKENS.yellowWash, '#fff', HP_TOKENS.paper]}/>
       <Confetti show={confetti}/>
