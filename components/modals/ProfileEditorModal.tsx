@@ -16,13 +16,52 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
   const [preview, setPreview] = useState<string | null>(user?.avatarImage || null);
   const [name, setName] = useState(user?.name || "");
 
+  const compressImage = (base64: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        // Compress to JPEG with 0.7 quality
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+    });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Basic check to avoid massive files before even reading
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File terlalu besar. Maksimal 5MB.");
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64 = reader.result as string;
-        setPreview(base64);
+        const compressed = await compressImage(base64);
+        setPreview(compressed);
       };
       reader.readAsDataURL(file);
     }
