@@ -98,6 +98,22 @@ export default function HRPeopleScreen({ openModal }: Props) {
     (e.department || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleCreateUser = async (formData: any) => {
+    const res = await fetch("/api/admin/create-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requesterId: currentUser?.id,
+        ...formData
+      }),
+    });
+    if (res.ok) fetchUsers();
+    else {
+      const err = await res.json();
+      throw new Error(err.error || "Gagal");
+    }
+  };
+
   return (
     <div style={{ padding: '0 16px 120px', fontFamily: HP_FONT }}>
       <ScreenHeader 
@@ -131,7 +147,13 @@ export default function HRPeopleScreen({ openModal }: Props) {
       {/* ── Users (HR/Admin) ── */}
       {activeTab === 'users' && isHR && (
         <>
-          <SectionHeader icon="people" label="Daftar Seluruh User" count={String(dbUsers.length)} />
+          <SectionHeader 
+            icon="people" 
+            label="Daftar Seluruh User" 
+            count={String(dbUsers.length)} 
+            action="+ Tambah Akun"
+            onAction={() => openModal('create_user', { onSave: handleCreateUser })}
+          />
           
           {/* Search Bar for Users */}
           <div style={{
