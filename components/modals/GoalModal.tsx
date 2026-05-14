@@ -25,11 +25,8 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
   const [progress, setProgress] = useState(goal?.progress || 0);
   const [status, setStatus] = useState(goal?.status || 'pending');
   const [isKpi, setIsKpi] = useState(goal?.is_kpi || false);
-  const [subGoals, setSubGoals] = useState<any[]>(goal?.subGoals || []);
   const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>(goal?.ownerId ? [String(goal.ownerId)] : []);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isRefining, setIsRefining] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const allEmployees = state?.hrData?.members || state?.managerData?.members || [];
   const filteredEmployees = allEmployees.filter((e: any) => 
@@ -43,59 +40,6 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
     );
   };
 
-  const refineWithAI = async () => {
-    if (!title || isRefining) return;
-    setIsRefining(true);
-    try {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `Refine this OKR title to be more professional, clear, and measurable: "${title}". Just give me the refined title string, no quotes or intro.`,
-          systemPrompt: "You are a professional OKR coach. Your goal is to make OKRs clear and measurable."
-        })
-      });
-      const data = await res.json();
-      if (data.text) setTitle(data.text.replace(/"/g, '').trim());
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsRefining(false);
-    }
-  };
-
-  const generateStrategyWithAI = async () => {
-    if (!title || isGenerating) return;
-    setIsGenerating(true);
-    try {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `For the goal: "${title}", suggest: 
-          1. A refined professional title.
-          2. 3-4 specific milestones/sub-tasks.
-          3. A realistic deadline based on today's date (${new Date().toISOString()}).
-          Format as JSON: {"refinedTitle": "...", "tasks": [{"title": "...", "done": false}], "suggestedDeadline": "YYYY-MM-DDTHH:mm"}`,
-          systemPrompt: "You are an OKR and Project Management specialist. Output ONLY valid JSON."
-        })
-      });
-      const data = await res.json();
-      if (data.text) {
-        const jsonMatch = data.text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const result = JSON.parse(jsonMatch[0]);
-          setTitle(result.refinedTitle);
-          setSubGoals(result.tasks);
-          setDue(result.suggestedDeadline);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const save = async () => {
     if (!title || !due) return;
@@ -133,7 +77,6 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
               status: status,
               is_kpi: isKpi || g.is_kpi,
               metric: tasksForGoal.length > 0 ? `${doneCount}/${tasksForGoal.length} task selesai` : g.metric,
-              subGoals: subGoals.length > 0 ? subGoals : g.subGoals,
             };
           }
           return g;
@@ -161,7 +104,6 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
           parent_id: parentId || null,
           status: 'pending',
           is_kpi: scope === 'employee' || scope === 'team',
-          subGoals: subGoals.length > 0 ? subGoals : undefined
         };
       });
 
@@ -210,26 +152,6 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
               }}
             />
           </div>
-          <button 
-            onClick={generateStrategyWithAI}
-            disabled={!title || isGenerating}
-            className="hp-tap"
-            style={{
-              marginTop: 24, padding: '12px', borderRadius: 16, background: `linear-gradient(135deg, ${HP_TOKENS.blue}, #2D5A9E)`,
-              border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', opacity: !title || isGenerating ? 0.5 : 1, gap: 4, width: 64, height: 64, flexShrink: 0,
-              boxShadow: `0 8px 16px ${HP_TOKENS.blueSoft}`
-            }}
-          >
-            {isGenerating ? (
-              <div className="hp-spin" style={{ width: 20, height: 20, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%' }} />
-            ) : (
-              <>
-                <HPGlyph name="sparkle" size={20} color="#fff" />
-                <span style={{ fontSize: 9, fontWeight: 900, color: '#fff' }}>AI WIZARD</span>
-              </>
-            )}
-          </button>
         </div>
 
         <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
@@ -277,22 +199,6 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
           )}
         </div>
 
-        {subGoals.length > 0 && (
-          <div style={{ 
-            marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8, 
-            background: HP_TOKENS.paper, padding: 14, borderRadius: 18, border: `1px dashed ${HP_TOKENS.line}`
-          }}>
-            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 900, letterSpacing: 0.5 }}>MILESTONES / KEY RESULTS</div>
-            {subGoals.map((sg, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 16, height: 16, borderRadius: 5, border: `1.5px solid ${HP_TOKENS.line}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {sg.done && <HPGlyph name="check" size={10} color={HP_TOKENS.sage} />}
-                </div>
-                <div style={{ ...HP_TEXT.small, fontSize: 13, color: HP_TOKENS.inkSoft, fontWeight: 600 }}>{sg.title}</div>
-              </div>
-            ))}
-          </div>
-        )}
 
         <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontWeight: 700, marginTop: 24, marginBottom: 12 }}>PILIH SCOPE OKR</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
