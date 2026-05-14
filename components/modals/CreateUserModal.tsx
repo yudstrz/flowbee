@@ -21,6 +21,14 @@ export default function CreateUserModal({ onClose, onSave }: CreateUserModalProp
   });
   const [loading, setLoading] = useState(false);
 
+  const [departments, setDepartments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/departments").then(r => r.json()).then(data => {
+      if (data.departments) setDepartments(data.departments);
+    });
+  }, []);
+
   const handleSave = async () => {
     if (!form.name || !form.email || !form.password) {
       alert("Nama, Email, dan Password wajib diisi!");
@@ -102,12 +110,16 @@ export default function CreateUserModal({ onClose, onSave }: CreateUserModalProp
           </div>
           <div>
             <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, marginBottom: 6, display: 'block' }}>DEPARTMENT</label>
-            <input 
-              placeholder="e.g. Sales" 
+            <select 
               value={form.department} 
               onChange={e => setForm({...form, department: e.target.value})} 
-              style={inputStyle} 
-            />
+              style={selectStyle}
+            >
+              <option value="">Pilih...</option>
+              {departments.map(d => (
+                <option key={d.id} value={d.name}>{d.name}</option>
+              ))}
+            </select>
           </div>
         </div>
 

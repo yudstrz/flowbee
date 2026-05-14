@@ -155,22 +155,37 @@ export default function HRPeopleScreen({ openModal }: Props) {
             onAction={() => openModal('create_user', { onSave: handleCreateUser })}
           />
           
-          {/* Search Bar for Users */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: HP_TOKENS.paper, borderRadius: 16, padding: '12px 16px', marginBottom: 16,
-            border: `1.5px solid ${HP_TOKENS.line}`
-          }}>
-            <HPGlyph name="leaf" size={18} color={HP_TOKENS.blue} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama atau departemen..."
+          {/* Search & Actions Bar */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+              background: HP_TOKENS.paper, borderRadius: 16, padding: '12px 16px',
+              border: `1.5px solid ${HP_TOKENS.line}`
+            }}>
+              <HPGlyph name="leaf" size={18} color={HP_TOKENS.blue} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Cari nama atau departemen..."
+                style={{
+                  flex: 1, background: 'none', border: 'none', outline: 'none',
+                  fontFamily: HP_FONT, fontWeight: 700, fontSize: 14, color: HP_TOKENS.ink,
+                }}
+              />
+            </div>
+            <button 
+              onClick={() => openModal('manage_depts')}
+              className="hp-tap"
               style={{
-                flex: 1, background: 'none', border: 'none', outline: 'none',
-                fontFamily: HP_FONT, fontWeight: 700, fontSize: 14, color: HP_TOKENS.ink,
+                padding: '0 16px', borderRadius: 16, background: HP_TOKENS.paper,
+                border: `1.5px solid ${HP_TOKENS.line}`, color: HP_TOKENS.ink,
+                fontFamily: HP_FONT, fontWeight: 800, fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8
               }}
-            />
+            >
+              <HPGlyph name="book" size={16} color={HP_TOKENS.blue} />
+              Kategori
+            </button>
           </div>
 
           {loadingUsers ? (

@@ -23,6 +23,14 @@ export default function EditUserModal({ onClose, user, managers, onSave, onDelet
     department: user.department || ""
   });
 
+  const [departments, setDepartments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/departments").then(r => r.json()).then(data => {
+      if (data.departments) setDepartments(data.departments);
+    });
+  }, []);
+
   const handleSave = () => {
     onSave({
       newRole: form.role,
@@ -87,21 +95,25 @@ export default function EditUserModal({ onClose, user, managers, onSave, onDelet
         </div>
 
         <div>
+          <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, marginBottom: 8, display: 'block' }}>DEPARTMENT</label>
+          <select 
+            value={form.department} 
+            onChange={e => setForm({...form, department: e.target.value})} 
+            style={selectStyle}
+          >
+            <option value="">Pilih Departemen...</option>
+            {departments.map(d => (
+              <option key={d.id} value={d.name}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
           <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, marginBottom: 8, display: 'block' }}>JOB TITLE</label>
           <input 
             placeholder="e.g. Senior Developer" 
             value={form.jobTitle} 
             onChange={e => setForm({...form, jobTitle: e.target.value})} 
-            style={inputStyle} 
-          />
-        </div>
-
-        <div>
-          <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, marginBottom: 8, display: 'block' }}>DEPARTMENT</label>
-          <input 
-            placeholder="e.g. Engineering" 
-            value={form.department} 
-            onChange={e => setForm({...form, department: e.target.value})} 
             style={inputStyle} 
           />
         </div>
