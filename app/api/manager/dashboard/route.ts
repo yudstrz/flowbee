@@ -37,8 +37,10 @@ export async function GET(request: Request) {
     const memberPlaceholders = memberIdsOnly.length > 0 ? memberIdsOnly.map(() => '?').join(',') : "''";
     
     const goalsRes = await db.execute({
-      sql: `SELECT * FROM goals WHERE scope = 'team' AND owner_id IN (${placeholders})`,
-      args: memberIds
+      sql: `SELECT * FROM goals 
+            WHERE (scope = 'team' AND owner_id IN (${placeholders}))
+            OR (scope = 'assigned' AND assigned_by_id = ?)`,
+      args: [...memberIds, userId]
     });
 
     const goals = goalsRes.rows.map(g => ({
@@ -48,7 +50,9 @@ export async function GET(request: Request) {
       members: members.length + 1,
       due: g.due_date,
       tone: g.tone || 'blue',
-      onTrack: Number(g.progress) > 40
+      onTrack: Number(g.progress) > 40,
+      scope: g.scope,
+      assignedById: g.assigned_by_id
     }));
 
     // 3. Fetch Pending Approvals (Goals or KPI tasks from team members)

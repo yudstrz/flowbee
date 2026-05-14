@@ -278,7 +278,9 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       <div style={{ flex: 1, height: 4, background: HP_TOKENS.lineSoft, borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: `${m.wellbeing}%`, height: '100%', background: m.wellbeing > 70 ? HP_TOKENS.sage : m.wellbeing > 40 ? HP_TOKENS.yellow : HP_TOKENS.coral, borderRadius: 2 }} />
                       </div>
-                      <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>WB {m.wellbeing}%</div>
+                      <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>
+                        {m.wellbeing > 80 ? '😊' : m.wellbeing > 60 ? '🙂' : m.wellbeing > 40 ? '😐' : '😟'} WB {m.wellbeing}%
+                      </div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>

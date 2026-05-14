@@ -100,17 +100,28 @@ export default function ManagerHomeScreen({ openModal }: Props) {
                   </div>
                 </div>
               </div>
-              <div style={{ width: 60, height: 60, position: 'relative' }}>
-                 {/* Simple progress ring indicator if needed, but text is enough */}
-                 <div style={{ 
-                    position: 'absolute', inset: 0, borderRadius: '50%', 
-                    border: `4px solid ${HP_TOKENS.blue}20`,
-                 }} />
-                 <div style={{ 
-                    position: 'absolute', inset: 0, borderRadius: '50%', 
-                    border: `4px solid ${HP_TOKENS.blue}`,
-                    clipPath: `inset(0 ${100 - avgProgress}% 0 0)` // Placeholder for circular progress
-                 }} />
+              <div style={{ width: 64, height: 64, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="64" height="64" viewBox="0 0 64 64" style={{ transform: 'rotate(-90deg)' }}>
+                  <circle
+                    cx="32" cy="32" r="26"
+                    fill="transparent"
+                    stroke={`${HP_TOKENS.blue}20`}
+                    strokeWidth="5"
+                  />
+                  <circle
+                    cx="32" cy="32" r="26"
+                    fill="transparent"
+                    stroke={HP_TOKENS.blue}
+                    strokeWidth="5"
+                    strokeDasharray={163.36}
+                    strokeDashoffset={163.36 - (163.36 * avgProgress) / 100}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease-out' }}
+                  />
+                </svg>
+                <div style={{ position: 'absolute', fontFamily: HP_FONT, fontWeight: 900, fontSize: 13, color: HP_TOKENS.blue }}>
+                  {avgProgress}%
+                </div>
               </div>
             </div>
           </div>
