@@ -10,6 +10,7 @@ import OnboardingScreen from "@/components/auth/OnboardingScreen";
 
 // UI
 import HPGlyph from "@/components/ui/HPGlyph";
+import BeeMascot from "@/components/ui/BeeMascot";
 import TabNav from "@/components/layout/TabNav";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
@@ -87,11 +88,52 @@ function AppContent() {
   const closeModal = useCallback(() => setModal(null), []);
 
   // ── Loading splash ─────────────────────────────────────────────────────────
-  if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: HP_TOKENS.paper }}>
-      <div style={{ width: 40, height: 40, background: HP_TOKENS.yellow, borderRadius: 12, opacity: 0.6 }} />
-    </div>
-  );
+  if (loading) {
+    const quotes = [
+      "Mempersiapkan hari yang produktif... ✨",
+      "Sedang mengumpulkan semangat... 🍯",
+      "Tetap fokus, tetap tumbuh... 🌱",
+      "Hampir siap! Yuk buat hari ini luar biasa. 🚀",
+      "Menghubungkanmu dengan tim terbaik... 🤝"
+    ];
+    // Use a fixed random index for the duration of the load
+    const quote = quotes[Math.floor(Date.now() / 2000) % quotes.length];
+
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        background: HP_TOKENS.paper,
+        gap: 24,
+        fontFamily: HP_FONT
+      }}>
+        <div style={{ animation: 'hpPulse 2s infinite ease-in-out' }}>
+          <BeeMascot mood="happy" size={100} showSpeech="" />
+        </div>
+        <div style={{ 
+          fontSize: 15, 
+          fontWeight: 700, 
+          color: HP_TOKENS.inkMute,
+          textAlign: 'center',
+          maxWidth: 240,
+          lineHeight: 1.5,
+          animation: 'hpFadeIn 0.8s ease-out'
+        }}>
+          {quote}
+        </div>
+
+        <style jsx global>{`
+          @keyframes hpPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   // ── Auth Check ─────────────────────────────────────────────────────────────
   if (!user) {
