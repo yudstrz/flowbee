@@ -203,7 +203,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       {verifiedTasks.length > 0 && (
                         <div>
                           <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.inkFade, marginBottom: 10 }}>HISTORY SELESAI</div>
-                          <div style={{ display: 'flex', flexDirection: 'wrap', gap: 6, flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
                             {verifiedTasks.map((t: any) => (
                               <div key={t.id} style={{ 
                                 padding: '4px 10px', borderRadius: 8, background: HP_TOKENS.lineSoft,
