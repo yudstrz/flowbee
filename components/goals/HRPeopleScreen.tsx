@@ -129,7 +129,6 @@ export default function HRPeopleScreen({ openModal }: Props) {
           { key: 'office', label: 'Office' },
           { key: 'schedule', label: 'Work Hours' },
           { key: 'contacts', label: 'Contacts' },
-          { key: 'people',  label: 'Directory' },
           { key: 'surveys', label: 'Surveys' },
         ].filter(Boolean).map((t: any) => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} className="hp-tap" style={{
