@@ -19,14 +19,14 @@ interface GoalModalProps {
 export default function GoalModal({ onClose, goal }: { onClose: () => void; goal?: any }) {
   const { state, updateState, user } = useHP();
   const [title, setTitle] = useState(goal?.title || "");
-  const [due, setDue] = useState(goal?.due || "");
+  const [due, setDue] = useState(goal?.dueISO || "");
   const [scope, setScope] = useState(goal?.scope === 'assigned' ? 'employee' : (goal?.scope || "personal"));
   const [parentId, setParentId] = useState(goal?.parent_id || "");
   const [progress, setProgress] = useState(goal?.progress || 0);
   const [status, setStatus] = useState(goal?.status || 'pending');
   const [isKpi, setIsKpi] = useState(goal?.is_kpi || false);
   const [subGoals, setSubGoals] = useState<any[]>(goal?.subGoals || []);
-  const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>([]);
+  const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>(goal?.ownerId ? [String(goal.ownerId)] : []);
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -185,7 +185,8 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
   ].filter(Boolean) as any[];
 
   const parentOptions = state?.goals.filter((g: any) => {
-    if (scope === 'personal') return g.scope === 'team' || g.scope === 'company';
+    if (scope === 'personal') return g.scope === 'team' || g.scope === 'company' || g.scope === 'assigned';
+    if (scope === 'employee') return g.scope === 'team' || g.scope === 'company';
     if (scope === 'team') return g.scope === 'company';
     return false;
   }) || [];
