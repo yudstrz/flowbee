@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       rank: userRow.rank,
       streak: userRow.streak,
       avatarImage: userRow.avatar_image,
-      userRole: userRow.user_role_context || userRow.role
+      userRole: userRow.user_role_context || userRow.role,
+      onboarded: !!userRow.is_onboarded
     };
 
     return NextResponse.json({ user });

@@ -145,15 +145,31 @@ function AppContent() {
     return <AuthScreen onLogin={login} />;
   }
 
+  const handleOnboardingFinish = async () => {
+    updateState({ onboarded: true });
+    // Explicitly sync once to be sure
+    try {
+      await fetch("/api/storage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          state: { ...state, onboarded: true }, 
+          user, 
+          userId: user.id 
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to sync onboarding status:", e);
+    }
+    openModal('checkin');
+  };
+
   // ── Onboarding ──
   if (state && !state.onboarded && user.role === 'employee') {
     return (
       <OnboardingScreen 
         userName={user.name} 
-        onFinish={() => {
-          updateState({ onboarded: true });
-          openModal('checkin');
-        }} 
+        onFinish={handleOnboardingFinish} 
       />
     );
   }
