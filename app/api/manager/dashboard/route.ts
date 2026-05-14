@@ -70,7 +70,30 @@ export async function GET(request: Request) {
       }));
     }
 
-    return NextResponse.json({ members, goals, approvals });
+    // 4. Fetch Team Tasks (for verification)
+    let teamTasks: any[] = [];
+    if (memberIdsOnly.length > 0) {
+      const tasksRes = await db.execute({
+        sql: `SELECT dp.*, u.name as user_name FROM daily_priorities dp 
+              JOIN users u ON dp.user_id = u.id
+              WHERE dp.user_id IN (${memberPlaceholders})`,
+        args: memberIdsOnly
+      });
+      teamTasks = tasksRes.rows.map(r => ({
+        id: r.id,
+        userId: r.user_id,
+        userName: r.user_name,
+        title: r.title,
+        goalId: r.goal_id,
+        done: !!r.is_done,
+        verified: !!r.is_verified,
+        energy: r.energy_level,
+        est: r.est_time,
+        tone: r.tone
+      }));
+    }
+
+    return NextResponse.json({ members, goals, approvals, teamTasks });
   } catch (error) {
     console.error("Manager Dashboard Error:", error);
     return NextResponse.json({ error: 'Failed to fetch manager data' }, { status: 500 });

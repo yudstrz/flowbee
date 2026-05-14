@@ -17,7 +17,16 @@ export async function GET(request: Request) {
         await db.execute("ALTER TABLE users ADD COLUMN is_onboarded INTEGER DEFAULT 0");
       }
     } catch (e) {
-      console.error("Migration error:", e);
+      console.error("Migration error (users):", e);
+    }
+    try {
+      const tableInfo = await db.execute(`PRAGMA table_info(daily_priorities)`);
+      const hasVerified = tableInfo.rows.some(r => r.name === 'is_verified');
+      if (!hasVerified) {
+        await db.execute("ALTER TABLE daily_priorities ADD COLUMN is_verified INTEGER DEFAULT 0");
+      }
+    } catch (e) {
+      console.error("Migration error (daily_priorities):", e);
     }
     try {
       await db.execute(`CREATE TABLE IF NOT EXISTS rewards (
@@ -60,7 +69,7 @@ export async function GET(request: Request) {
       args: [userId]
     });
     const priorities = prioritiesRes.rows.map(r => ({
-      id: r.id, title: r.title, goal: r.goal_title, goal_id: r.goal_id, energy: r.energy_level, est: r.est_time, done: !!r.is_done, tone: r.tone
+      id: r.id, title: r.title, goal: r.goal_title, goal_id: r.goal_id, energy: r.energy_level, est: r.est_time, done: !!r.is_done, verified: !!r.is_verified, tone: r.tone
     }));
 
 
@@ -299,8 +308,8 @@ export async function POST(request: Request) {
       await db.execute({ sql: "DELETE FROM daily_priorities WHERE user_id = ?", args: [userId] });
       for (const p of state.priorities) {
         await db.execute({
-          sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, tone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.tone]
+          sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
         });
       }
     }
