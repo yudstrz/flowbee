@@ -63,13 +63,6 @@ export async function GET(request: Request) {
       id: r.id, title: r.title, goal: r.goal_title, goal_id: r.goal_id, energy: r.energy_level, est: r.est_time, done: !!r.is_done, tone: r.tone
     }));
 
-    const weeklyPrioritiesRes = await db.execute({
-      sql: "SELECT * FROM weekly_priorities WHERE user_id = ?",
-      args: [userId]
-    });
-    const weeklyPriorities = weeklyPrioritiesRes.rows.map(r => ({
-      id: r.id, text: r.text, done: !!r.is_done
-    }));
 
     const habitsRes = await db.execute({
       sql: "SELECT * FROM habits WHERE user_id = ?",
@@ -207,7 +200,7 @@ export async function GET(request: Request) {
       tag: latestMood?.tag || null,
       intention: "",
       priorities,
-      weeklyPriorities,
+      weeklyPriorities: [],
       habits,
       goals,
       surveys,
@@ -312,16 +305,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Sync Weekly Priorities
-    if (state.weeklyPriorities) {
-      await db.execute({ sql: "DELETE FROM weekly_priorities WHERE user_id = ?", args: [userId] });
-      for (const w of state.weeklyPriorities) {
-        await db.execute({
-          sql: `INSERT INTO weekly_priorities (user_id, text, is_done) VALUES (?, ?, ?)`,
-          args: [userId, w.text, w.done ? 1 : 0]
-        });
-      }
-    }
 
     // Sync Habits
     if (state.habits) {

@@ -23,7 +23,6 @@ async function seed() {
       "kudos",
       "habits",
       "daily_priorities",
-      "weekly_priorities",
       "sub_goals",
       "goals",
       "mood_checkins",

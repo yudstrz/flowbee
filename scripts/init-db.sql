@@ -80,14 +80,6 @@ CREATE TABLE IF NOT EXISTS daily_priorities (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS weekly_priorities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    text TEXT NOT NULL,
-    is_done BOOLEAN DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
 
 -- 6. Habit Domain
 CREATE TABLE IF NOT EXISTS habits (

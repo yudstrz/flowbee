@@ -46,14 +46,6 @@ async function migrate() {
       });
     }
 
-    // 3. Migrate Weekly Priorities
-    console.log("- Migrating weekly priorities...");
-    for (const w of state.weeklyPriorities) {
-      await db.execute({
-        sql: `INSERT INTO weekly_priorities (user_id, text, is_done) VALUES (?, ?, ?)`,
-        args: ["user_1", w.text, w.done ? 1 : 0]
-      });
-    }
 
     // 4. Migrate Goals
     console.log("- Migrating goals...");

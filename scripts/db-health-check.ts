@@ -7,7 +7,6 @@ async function check() {
   const tests = [
     { name: "Users Table", sql: "SELECT * FROM users LIMIT 1" },
     { name: "Daily Priorities", sql: "SELECT * FROM daily_priorities LIMIT 1" },
-    { name: "Weekly Priorities", sql: "SELECT * FROM weekly_priorities LIMIT 1" },
     { name: "Habits", sql: "SELECT * FROM habits LIMIT 1" },
     { name: "Goals", sql: "SELECT * FROM goals LIMIT 1" },
     { name: "Sub Goals", sql: "SELECT * FROM sub_goals LIMIT 1" },

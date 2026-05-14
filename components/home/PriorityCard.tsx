@@ -10,7 +10,9 @@ interface PriorityCardProps {
 }
 
 export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
+  const { updateState } = useHP();
   const [showPoints, setShowPoints] = useState(false);
+  const [showFocusToast, setShowFocusToast] = useState(false);
 
   const toneMap: Record<string, any> = {
     sage: { bg: HP_TOKENS.yellowSoft, fg: HP_TOKENS.ink, wash: HP_TOKENS.yellowWash },
@@ -21,12 +23,20 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
   const t = toneMap[p.tone] || toneMap.sage;
   const energyIcon = p.energy === 'high' ? 'zap' : p.energy === 'mid' ? 'activity' : 'sparkle';
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!p.done) {
       setShowPoints(true);
       setTimeout(() => setShowPoints(false), 1200);
     }
     onToggle();
+  };
+
+  const setAsFocus = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateState({ intention: p.title });
+    setShowFocusToast(true);
+    setTimeout(() => setShowFocusToast(false), 2000);
   };
   
   return (
@@ -54,6 +64,21 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}>
           +{p.points || 50} EXP
+        </div>
+      )}
+
+      {/* Focus Toast */}
+      {showFocusToast && (
+        <div style={{
+          position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)',
+          background: HP_TOKENS.yellow, color: HP_TOKENS.ink,
+          fontSize: 11, fontWeight: 800, fontFamily: HP_FONT,
+          padding: '6px 12px', borderRadius: 10,
+          animation: 'hpRise 0.3s ease-out',
+          zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          whiteSpace: 'nowrap'
+        }}>
+          🎯 Jadi Fokus Utama!
         </div>
       )}
 
@@ -110,19 +135,36 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
            )}
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <HPGlyph name={energyIcon} size={11} color={HP_TOKENS.inkMute} />
-            <span style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>
-              {p.est}
-            </span>
+             <HPGlyph name={energyIcon} size={11} color={HP_TOKENS.inkMute} />
+             <span style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>
+               {p.est}
+             </span>
           </div>
         </div>
       </div>
 
-      <div style={{ 
-        width: 32, height: 32, borderRadius: 16, background: HP_TOKENS.paper,
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>
-         <HPGlyph name="arrow" size={14} color={HP_TOKENS.line} />
+      <div style={{ display: 'flex', gap: 8 }}>
+        {!p.done && (
+          <button 
+            onClick={setAsFocus}
+            className="hp-tap"
+            title="Set as Focus Today"
+            style={{ 
+              width: 32, height: 32, borderRadius: 16, background: HP_TOKENS.yellowSoft,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+             <HPGlyph name="sparkle" size={14} color={HP_TOKENS.yellow} />
+          </button>
+        )}
+        
+        <div style={{ 
+          width: 32, height: 32, borderRadius: 16, background: HP_TOKENS.paper,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+           <HPGlyph name="arrow" size={14} color={HP_TOKENS.line} />
+        </div>
       </div>
     </div>
   );

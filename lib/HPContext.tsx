@@ -11,7 +11,6 @@ interface HPState {
   feed: any[];
   goals: any[];
   habits: any[];
-  weeklyPriorities: any[];
   surveys: any[];
   skills: any[];
   learning: any[];
@@ -134,7 +133,7 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
       else {
         setState({
           mood: null, energy: null, tag: null, intention: "",
-          priorities: [], feed: [], goals: [], habits: [], weeklyPriorities: [],
+          priorities: [], feed: [], goals: [], habits: [],
           surveys: [], skills: [], learning: [], coaching: null, wellbeing: { dims: [], programs: [] },
           points: data.user?.points || 0, coins: data.user?.coins || 0, notifications: 0, 
           rewards: [], rewardHistory: [],

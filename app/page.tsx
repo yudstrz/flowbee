@@ -50,7 +50,6 @@ import GoalModal from "@/components/modals/GoalModal";
 import WorkCheckInModal from "@/components/modals/WorkCheckInModal";
 import ManagePrioritiesModal from "@/components/modals/ManagePrioritiesModal";
 import ManageHabitsModal from "@/components/modals/ManageHabitsModal";
-import ManageWeeklyModal from "@/components/modals/ManageWeeklyModal";
 import ManageLearningModal from "@/components/modals/ManageLearningModal";
 import ScheduleCoachingModal from "@/components/modals/ScheduleCoachingModal";
 import GROWCoachingModal from "@/components/modals/GROWCoachingModal";
@@ -252,7 +251,6 @@ function AppContent() {
       {modal?.name === 'work_checkin'     && <WorkCheckInModal onClose={closeModal} {...modal.props} />}
       {modal?.name === 'manage_priorities'&& <ManagePrioritiesModal onClose={closeModal} {...modal.props} />}
       {modal?.name === 'manage_habits'    && <ManageHabitsModal onClose={closeModal} />}
-      {modal?.name === 'manage_weekly'    && <ManageWeeklyModal onClose={closeModal} />}
       {modal?.name === 'manage_learning'  && <ManageLearningModal onClose={closeModal} />}
       {modal?.name === 'schedule_coaching'&& <ScheduleCoachingModal onClose={closeModal} />}
       {modal?.name === 'learning_detail'  && <LearningDetailModal onClose={closeModal} />}

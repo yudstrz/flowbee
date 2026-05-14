@@ -29,14 +29,6 @@ export default function GoalsScreen({ openModal }: GoalsScreenProps) {
     return false;
   });
 
-  const toggleWeekly = (id: number) => {
-    updateState((s: any) => ({
-      ...s,
-      weeklyPriorities: s.weeklyPriorities.map((w: any) => 
-        w.id === id ? { ...w, done: !w.done } : w
-      )
-    }));
-  };
 
   return (
     <div style={{ padding: '0 16px 120px', fontFamily: HP_FONT }}>
@@ -110,58 +102,6 @@ export default function GoalsScreen({ openModal }: GoalsScreenProps) {
         )}
       </div>
 
-      <SectionHeader 
-        icon="calendar" 
-        label="Weekly priorities" 
-        action="Edit"
-        onAction={() => openModal('manage_weekly')}
-      />
-      <HPCard padding={14}>
-        <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginBottom: 10, fontWeight: 700 }}>
-          Set 3–5 prioritas minggu ini
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {(state.weeklyPriorities || []).map((w: any, i: number) => (
-            <div 
-              key={w.id} 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 12, 
-                padding: '10px 0', 
-                borderTop: i === 0 ? 'none' : `1px solid ${HP_TOKENS.lineSoft}` 
-              }}
-            >
-              <button 
-                onClick={() => toggleWeekly(w.id)}
-                style={{ 
-                  width: 22, height: 22, borderRadius: 11, 
-                  background: w.done ? HP_TOKENS.ink : 'transparent',
-                  border: `1.5px solid ${w.done ? HP_TOKENS.ink : HP_TOKENS.line}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: 0, cursor: 'pointer'
-                }}
-              >
-                {w.done && <HPGlyph name="check" size={10} color="#fff"/>}
-              </button>
-              <div style={{ 
-                ...HP_TEXT.body, 
-                fontSize: 14, 
-                color: w.done ? HP_TOKENS.inkFade : HP_TOKENS.ink, 
-                fontWeight: 600,
-                textDecoration: w.done ? 'line-through' : 'none'
-              }}>
-                {w.text}
-              </div>
-            </div>
-          ))}
-          {(!state.weeklyPriorities || state.weeklyPriorities.length === 0) && (
-            <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, padding: '10px 0' }}>
-              Belum ada prioritas mingguan. Klik Edit untuk mengatur.
-            </div>
-          )}
-        </div>
-      </HPCard>
     </div>
   );
 }
