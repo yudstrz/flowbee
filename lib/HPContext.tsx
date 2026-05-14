@@ -30,6 +30,7 @@ interface HPState {
     end: string;
     breakStart: string;
     breakEnd: string;
+    midDayCheckInTime: string;
   };
   todayAttendance?: {
     checkIn?: string;
@@ -41,6 +42,8 @@ interface HPState {
   hrData?: any;
   managerData?: any;
   onboarded?: boolean;
+  focusTaskId?: number | null;
+  focusProgress?: number;
 }
 
 export type UserRole = 'hr' | 'manager' | 'employee';
@@ -139,9 +142,11 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
           rewards: [], rewardHistory: [],
           logbook: [], lastActivityDate: new Date().toISOString(),
           penaltyActive: false, penaltyThresholdDays: 3,
-          workSchedule: { start: "08:00", end: "17:00", breakStart: "12:00", breakEnd: "13:00" },
+          workSchedule: { start: "08:00", end: "17:00", breakStart: "12:00", breakEnd: "13:00", midDayCheckInTime: "12:00" },
           contacts: [],
-          onboarded: false
+          onboarded: false,
+          focusTaskId: null,
+          focusProgress: 0
         });
       }
       if (data.user) setUser(data.user);

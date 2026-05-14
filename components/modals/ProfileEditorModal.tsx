@@ -11,10 +11,11 @@ interface ProfileEditorModalProps {
 }
 
 export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps) {
-  const { user, updateUser, logout } = useHP();
+  const { user, updateUser, logout, state, updateState } = useHP();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(user?.avatarImage || null);
   const [name, setName] = useState(user?.name || "");
+  const [midDayTime, setMidDayTime] = useState(state?.workSchedule?.midDayCheckInTime || "12:00");
 
   const compressImage = (base64: string): Promise<string> => {
     return new Promise((resolve) => {
@@ -72,6 +73,11 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
       name,
       ...(preview !== undefined ? { avatarImage: preview ?? undefined } : {})
     });
+    if (state?.workSchedule) {
+      updateState({ 
+        workSchedule: { ...state.workSchedule, midDayCheckInTime: midDayTime } 
+      });
+    }
     onClose();
   };
 
@@ -141,6 +147,27 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
               fontFamily: HP_FONT, fontSize: 14, fontWeight: 600, outline: 'none', background: HP_TOKENS.card
             }}
           />
+        </div>
+
+        <div style={{ width: '100%' }}>
+          <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 700, marginBottom: 6 }}>JAM PENGINGAT REALISASI (MID-DAY CHECK-IN)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: HP_TOKENS.yellowSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <HPGlyph name="target" size={20} color={HP_TOKENS.ink} />
+            </div>
+            <input 
+              type="time"
+              value={midDayTime}
+              onChange={(e) => setMidDayTime(e.target.value)}
+              style={{
+                flex: 1, padding: '12px 16px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
+                fontFamily: HP_FONT, fontSize: 16, fontWeight: 700, outline: 'none', background: HP_TOKENS.card
+              }}
+            />
+          </div>
+          <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 6, fontWeight: 600 }}>
+            Popup "Cek Target Kerja" akan muncul otomatis pada jam ini.
+          </div>
         </div>
 
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>

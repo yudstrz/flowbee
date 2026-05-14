@@ -50,6 +50,7 @@ export default function HomeScreen({ openModal }: any) {
     text: "Semangat ya! Kamu sudah melakukan yang terbaik hari ini. ✨", 
     type: 'cheer' 
   });
+  const [midDayCheckInShown, setMidDayCheckInShown] = useState(false);
 
 
   useEffect(() => {
@@ -72,12 +73,18 @@ export default function HomeScreen({ openModal }: any) {
 
       const breakStart = parseTime(state.workSchedule.breakStart);
       const workEnd = parseTime(state.workSchedule.end);
+      const midDayTime = parseTime(state.workSchedule.midDayCheckInTime || "12:00");
 
       // Check break reminder (15 mins before)
       if (currentMins >= breakStart - 15 && currentMins < breakStart) {
         setReminder({ type: 'break', mins: breakStart - currentMins });
       } else if (currentMins >= workEnd - 15 && currentMins < workEnd) {
         setReminder({ type: 'clockout', mins: workEnd - currentMins });
+      } else if (currentMins >= midDayTime && currentMins < midDayTime + 15 && !midDayCheckInShown) {
+        // Trigger Mid-day Check-in at the scheduled time
+        openModal('work_checkin');
+        setMidDayCheckInShown(true);
+        setReminder(null);
       } else {
         setReminder(null);
       }

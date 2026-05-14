@@ -11,7 +11,7 @@ interface PriorityCardProps {
 }
 
 export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
-  const { updateState } = useHP();
+  const { state, updateState } = useHP();
   const [showPoints, setShowPoints] = useState(false);
   const [showFocusToast, setShowFocusToast] = useState(false);
 
@@ -35,7 +35,7 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
 
   const setAsFocus = (e: React.MouseEvent) => {
     e.stopPropagation();
-    updateState({ intention: p.title });
+    updateState({ intention: p.title, focusTaskId: p.id, focusProgress: p.progress || 0 });
     setShowFocusToast(true);
     setTimeout(() => setShowFocusToast(false), 2000);
   };
@@ -48,9 +48,9 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
       gap: 16, 
       padding: '18px',
       background: p.done ? HP_TOKENS.card : '#fff',
-      border: `1.5px solid ${p.done ? HP_TOKENS.line : HP_TOKENS.line}`,
+      border: `1.5px solid ${state?.focusTaskId === p.id ? HP_TOKENS.yellow : (p.done ? HP_TOKENS.line : HP_TOKENS.line)}`,
       borderRadius: 20, 
-      boxShadow: p.done ? 'none' : '0 4px 12px rgba(0,0,0,0.02)',
+      boxShadow: state?.focusTaskId === p.id ? `0 8px 24px ${HP_TOKENS.yellow}20` : (p.done ? 'none' : '0 4px 12px rgba(0,0,0,0.02)'),
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     }}>
       {/* Floating +50 Poin */}
@@ -141,6 +141,12 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
                {p.est}
              </span>
           </div>
+          
+          {state?.focusTaskId === p.id && (
+            <div style={{ width: '100%', height: 4, background: HP_TOKENS.lineSoft, borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
+              <div style={{ width: `${state?.focusProgress || 0}%`, height: '100%', background: HP_TOKENS.yellow, borderRadius: 2 }} />
+            </div>
+          )}
         </div>
       </div>
 

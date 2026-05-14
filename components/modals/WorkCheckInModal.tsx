@@ -20,6 +20,8 @@ export default function WorkCheckInModal({ onClose }: WorkCheckInModalProps) {
   const { state, updateState } = useHP();
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [showNotes, setShowNotes] = useState(false);
 
   if (!state) return null;
 
@@ -61,6 +63,31 @@ Jawab dengan tone yang asik dan menyemangati.`,
     }));
   };
 
+  const updateFocusProgress = (val: number) => {
+    updateState({ focusProgress: val });
+  };
+
+  const saveRealisasi = () => {
+    if (!state.focusTaskId) return;
+    const task = priorities.find((p: any) => p.id === state.focusTaskId);
+    const log = {
+      id: Date.now(),
+      type: 'realization_check',
+      title: task?.title || "Focus Task",
+      progress: state.focusProgress,
+      notes: notes,
+      date: new Date().toLocaleDateString('id-ID'),
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    };
+    updateState((s: any) => ({
+      ...s,
+      logbook: [log, ...(s.logbook || [])]
+    }));
+    setShowNotes(false);
+    setNotes("");
+    alert("Realisasi berhasil disimpan ke Logbook! ✨");
+  };
+
   return (
     <Modal onClose={onClose} title="Cek Target Kerja 🚀">
       <div style={{ marginBottom: 24, padding: 16, background: HP_TOKENS.paper, borderRadius: 20, border: `1px solid ${HP_TOKENS.line}` }}>
@@ -79,6 +106,52 @@ Jawab dengan tone yang asik dan menyemangati.`,
           {doneCount} / {totalCount} TARGET TEREALISASI
         </div>
       </div>
+
+      {state.focusTaskId && (
+        <HPCard padding={20} style={{ marginBottom: 24, background: HP_TOKENS.yellowWash, border: `1.5px solid ${HP_TOKENS.yellow}` }}>
+          <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.ink, fontWeight: 900, marginBottom: 12 }}>FOCUS REALISASI</div>
+          <div style={{ ...HP_TEXT.h, fontSize: 15, marginBottom: 16 }}>{priorities.find((p: any) => p.id === state.focusTaskId)?.title}</div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ ...HP_TEXT.small, fontWeight: 700 }}>Progress: {state.focusProgress}%</div>
+            {state.focusProgress !== undefined && state.focusProgress < 100 && (
+              <button onClick={() => setShowNotes(true)} style={{ background: 'none', border: 'none', color: HP_TOKENS.blue, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>
+                + Catat Kendala
+              </button>
+            )}
+          </div>
+          <input 
+            type="range" min="0" max="100" 
+            value={state.focusProgress || 0} 
+            onChange={(e) => updateFocusProgress(parseInt(e.target.value))}
+            style={{ width: '100%', accentColor: HP_TOKENS.yellow }}
+          />
+
+          {showNotes && (
+            <div style={{ marginTop: 16 }}>
+              <textarea 
+                placeholder="Kenapa baru segini persen? Apa kendalanya? (misal: nunggu approval, meeting mendadak)"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
+                  fontFamily: HP_FONT, fontSize: 13, minHeight: 80, boxSizing: 'border-box'
+                }}
+              />
+              <button 
+                onClick={saveRealisasi}
+                style={{ 
+                  marginTop: 10, width: '100%', padding: '10px', borderRadius: 10,
+                  background: HP_TOKENS.ink, color: HP_TOKENS.yellow, border: 'none',
+                  fontFamily: HP_FONT, fontWeight: 800, fontSize: 12, cursor: 'pointer'
+                }}
+              >
+                Simpan Realisasi
+              </button>
+            </div>
+          )}
+        </HPCard>
+      )}
 
       <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontWeight: 900, fontSize: 10, letterSpacing: 1, marginBottom: 12 }}>DAFTAR TARGET HARI INI</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
