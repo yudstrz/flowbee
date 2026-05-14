@@ -154,102 +154,47 @@ export default function HRPeopleScreen({ openModal }: Props) {
           {loadingUsers ? (
             <div style={{ textAlign: 'center', padding: 40, color: HP_TOKENS.inkMute }}>Loading users...</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {filtered.map(u => (
-                <HPCard key={u.id} padding={18} style={{ position: 'relative', overflow: 'visible' }}>
-                  {/* Delete Button */}
-                  <button 
-                    onClick={() => handleDeleteUser(u.id)}
-                    className="hp-tap"
-                    style={{
-                      position: 'absolute', top: 12, right: 12,
-                      width: 32, height: 32, borderRadius: 10, background: HP_TOKENS.coralSoft,
-                      border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', zIndex: 5
-                    }}
-                  >
-                    <HPGlyph name="close" size={16} color={HP_TOKENS.coral} />
-                  </button>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                    <HPAvatar name={u.name} size={48} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ ...HP_TEXT.h, fontSize: 16, marginBottom: 2 }}>{u.name}</div>
-                      <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>{u.email.toUpperCase()}</div>
-                      
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 16 }}>
-                        <div>
-                          <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, fontSize: 9 }}>ROLE</label>
-                          <select 
-                            value={u.role}
-                            onChange={(e) => handleUpdateUser(u.id, { newRole: e.target.value })}
-                            style={{
-                              width: '100%', padding: '10px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
-                              fontFamily: HP_FONT, fontSize: 12, fontWeight: 800, outline: 'none', background: HP_TOKENS.paper,
-                              marginTop: 4
-                            }}
-                          >
-                            <option value="employee">Employee</option>
-                            <option value="manager">Manager</option>
-                            <option value="hr">HR</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, fontSize: 9 }}>MANAGER</label>
-                          <select 
-                            value={u.manager_id || ""}
-                            onChange={(e) => handleUpdateUser(u.id, { managerId: e.target.value })}
-                            style={{
-                              width: '100%', padding: '10px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
-                              fontFamily: HP_FONT, fontSize: 12, fontWeight: 800, outline: 'none', background: HP_TOKENS.paper,
-                              marginTop: 4
-                            }}
-                          >
-                            <option value="">No Manager</option>
-                            {managers.filter(m => m.id !== u.id).map(m => (
-                              <option key={m.id} value={m.id}>{m.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div style={{ marginTop: 12 }}>
-                        <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, fontSize: 9 }}>JOB TITLE</label>
-                        <input 
-                          defaultValue={u.job_title || ""}
-                          onBlur={(e) => handleUpdateUser(u.id, { jobTitle: e.target.value })}
-                          placeholder="e.g. Product Designer"
-                          style={{
-                            width: '100%', padding: '10px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
-                            fontFamily: HP_FONT, fontSize: 12, fontWeight: 700, outline: 'none', background: '#fff',
-                            marginTop: 4
-                          }}
-                        />
-                      </div>
-
-                      <div style={{ marginTop: 12 }}>
-                        <label style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade, fontWeight: 900, fontSize: 9 }}>DEPARTMENT</label>
-                        <input 
-                          defaultValue={u.department || ""}
-                          onBlur={(e) => handleUpdateUser(u.id, { department: e.target.value })}
-                          placeholder="e.g. Digital Experience"
-                          style={{
-                            width: '100%', padding: '10px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
-                            fontFamily: HP_FONT, fontSize: 12, fontWeight: 700, outline: 'none', background: '#fff',
-                            marginTop: 4
-                          }}
-                        />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {filtered.map(u => (
+              <HPCard 
+                key={u.id} 
+                padding={12} 
+                onClick={() => openModal('edit_user', {
+                  user: u,
+                  managers: managers,
+                  onSave: (updates: any) => handleUpdateUser(u.id, updates),
+                  onDelete: () => handleDeleteUser(u.id)
+                })}
+                style={{ cursor: 'pointer', border: `1.5px solid ${HP_TOKENS.line}` }}
+                className="hp-tap"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <HPAvatar name={u.name} size={44} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ ...HP_TEXT.h, fontSize: 15 }}>{u.name}</div>
+                      <div style={{
+                        padding: '2px 8px', borderRadius: 6, fontSize: 10, fontWeight: 900,
+                        background: u.role === 'hr' ? '#EDE8F5' : u.role === 'manager' ? HP_TOKENS.blueSoft : HP_TOKENS.yellowSoft,
+                        color: u.role === 'hr' ? '#7B6BB5' : u.role === 'manager' ? HP_TOKENS.blue : HP_TOKENS.yellow,
+                      }}>
+                        {u.role.toUpperCase()}
                       </div>
                     </div>
+                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700, marginTop: 2 }}>
+                      {u.job_title || 'No Title'} • {u.department || 'No Dept'}
+                    </div>
                   </div>
-                </HPCard>
-              ))}
-              {filtered.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 40, color: HP_TOKENS.inkMute }}>
-                  Tidak menemukan user dengan kata kunci "{search}"
+                  <HPGlyph name="arrow" size={16} color={HP_TOKENS.line} />
                 </div>
-              )}
-            </div>
+              </HPCard>
+            ))}
+            {filtered.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 40, color: HP_TOKENS.inkMute }}>
+                Tidak menemukan user dengan kata kunci "{search}"
+              </div>
+            )}
+          </div>
           )}
         </>
       )}
