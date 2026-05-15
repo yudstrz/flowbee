@@ -99,3 +99,114 @@ button {
   transform: translateY(-2px);
   background: #000000;
 }
+
+/* Responsive Layout */
+.hp-app-container {
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--hp-paper);
+}
+
+.hp-app-nav {
+  flex-shrink: 0;
+  background: var(--hp-card);
+  border-top: 1px solid var(--hp-line);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 12px 16px 24px;
+  z-index: 50;
+}
+
+.hp-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.hp-nav-btn:hover {
+  background: var(--hp-line-soft);
+}
+
+.hp-nav-btn-icon {
+  margin-bottom: 2px;
+}
+
+.hp-nav-btn-text {
+  font-family: var(--hp-font);
+  font-weight: 800;
+  font-size: 10px;
+}
+
+.hp-app-content {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-screen-container {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 64px 16px 24px; /* Default top padding to account for top elements */
+}
+
+/* Desktop overrides */
+@media (min-width: 768px) {
+  .hp-app-container {
+    flex-direction: row;
+  }
+  
+  .hp-app-nav {
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 260px;
+    border-top: none;
+    border-right: 1px solid var(--hp-line);
+    padding: 32px 16px;
+    gap: 8px;
+    background: var(--hp-paper); /* match background on desktop for sidebar feel */
+  }
+  
+  .hp-nav-btn {
+    flex-direction: row;
+    flex: 0 0 auto;
+    padding: 14px 20px;
+    gap: 16px;
+    border-radius: 16px;
+  }
+  
+  .hp-nav-btn-text {
+    font-size: 15px;
+  }
+  
+  .hp-nav-brand {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px 40px;
+    margin-bottom: 16px;
+  }
+
+  .hp-screen-container {
+    padding: 48px 40px 40px; /* more spacious padding on desktop */
+  }
+}
+
+.hp-nav-brand {
+  display: none;
+}

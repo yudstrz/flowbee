@@ -183,27 +183,25 @@ function AppContent() {
   const isHR = currentRole === 'hr';
 
   // ── Render screen by role + tab ─────────────────────────────────────────────
-  const pad = { paddingTop: 58 };
-
   const renderScreen = () => {
     // Employee
     if (currentRole === 'employee') {
-      if (tab === 'home')      return <div style={pad}><HomeScreen tab={tab} openModal={openModal} /></div>;
-      if (tab === 'goals')     return <div style={pad}><GoalsScreen openModal={openModal} /></div>;
-      if (tab === 'recognize') return <div style={pad}><RecognizeScreen openModal={openModal} /></div>;
-      if (tab === 'wellbeing') return <div style={pad}><WellbeingScreen openModal={openModal} /></div>;
+      if (tab === 'home')      return <HomeScreen tab={tab} openModal={openModal} />;
+      if (tab === 'goals')     return <GoalsScreen openModal={openModal} />;
+      if (tab === 'recognize') return <RecognizeScreen openModal={openModal} />;
+      if (tab === 'wellbeing') return <WellbeingScreen openModal={openModal} />;
     }
     // Manager
     if (currentRole === 'manager') {
-      if (tab === 'home')      return <div style={pad}><ManagerHomeScreen openModal={openModal} /></div>;
-      if (tab === 'goals')     return <div style={pad}><ManagerGoalsScreen openModal={openModal} /></div>;
-      if (tab === 'recognize') return <div style={pad}><ManagerRecognizeScreen openModal={openModal} /></div>;
+      if (tab === 'home')      return <ManagerHomeScreen openModal={openModal} />;
+      if (tab === 'goals')     return <ManagerGoalsScreen openModal={openModal} />;
+      if (tab === 'recognize') return <ManagerRecognizeScreen openModal={openModal} />;
     }
     // HR view
     if (currentRole === 'hr') {
-      if (tab === 'home')      return <div style={pad}><HRHomeScreen openModal={openModal} /></div>;
-      if (tab === 'goals')     return <div style={pad}><HRPeopleScreen openModal={openModal} /></div>;
-      if (tab === 'recognize') return <div style={pad}><HRRecognizeScreen openModal={openModal} /></div>;
+      if (tab === 'home')      return <HRHomeScreen openModal={openModal} />;
+      if (tab === 'goals')     return <HRPeopleScreen openModal={openModal} />;
+      if (tab === 'recognize') return <HRRecognizeScreen openModal={openModal} />;
     }
     return null;
   };
@@ -244,63 +242,65 @@ function AppContent() {
   };
 
   return (
-    <div style={{ position: 'relative', height: '100%', background: HP_TOKENS.paper, overflow: 'hidden' }}>
-      {/* Role pill — top right */}
-      <div style={{
-        position: 'absolute', top: 10, right: 14, zIndex: 40,
-        display: 'flex', alignItems: 'center', gap: 6,
-      }}>
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px', borderRadius: 99,
-            background: meta.bg,
-            border: `1.5px solid ${meta.color}30`,
-            fontFamily: HP_FONT, fontWeight: 800, fontSize: 11,
-            color: meta.color,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-          }}
-        >
-          <HPGlyph name={meta.glyph} size={11} color={meta.color} />
-          <span>{meta.label}</span>
-        </div>
-      </div>
+    <div className="hp-app-container">
+      <TabNav tab={tab} setTab={setTab} userRole={currentRole} />
 
       {/* Main content */}
-      <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
-        {renderScreen()}
-      </div>
+      <div className="hp-app-content">
+        {/* Role pill — top right */}
+        <div style={{
+          position: 'absolute', top: 16, right: 16, zIndex: 40,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px', borderRadius: 99,
+              background: meta.bg,
+              border: `1.5px solid ${meta.color}30`,
+              fontFamily: HP_FONT, fontWeight: 800, fontSize: 11,
+              color: meta.color,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <HPGlyph name={meta.glyph} size={11} color={meta.color} />
+            <span>{meta.label}</span>
+          </div>
+        </div>
 
-      {/* Floating AI Coach button - DRAGGABLE */}
-      <button
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          style={{
-            position: 'absolute', 
-            right: 18 - coachPos.x, 
-            bottom: 106 - coachPos.y, 
-            zIndex: 100, // High z-index to be above everything
-            width: 56, height: 56, borderRadius: 28, border: 'none',
-            background: currentRole === 'manager' ? HP_TOKENS.blue :
-                       currentRole === 'hr' ? '#7B6BB5' :
-                       HP_TOKENS.yellow,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            touchAction: 'none', // Prevent scrolling while dragging
-            boxShadow: `0 8px 24px ${
-              currentRole === 'manager' ? 'rgba(59,111,160,0.4)' :
-              currentRole === 'hr' ? 'rgba(123,107,181,0.4)' :
-              'rgba(253,185,19,0.4)'
-            }`,
-            transition: 'transform 0.1s ease-out',
-            transform: isDragging ? 'scale(1.05)' : 'scale(1)',
-          }}
-        >
-          <HPGlyph name="sparkle" size={26} color={currentRole === 'employee' ? HP_TOKENS.ink : "#fff"} />
+        <div className="hp-screen-container">
+          {renderScreen()}
+        </div>
+
+        {/* Floating AI Coach button - DRAGGABLE */}
+        <button
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            style={{
+              position: 'fixed', 
+              right: 24 - coachPos.x, 
+              bottom: 106 - coachPos.y, // Keep safe distance from bottom nav on mobile
+              zIndex: 100, // High z-index to be above everything
+              width: 56, height: 56, borderRadius: 28, border: 'none',
+              background: currentRole === 'manager' ? HP_TOKENS.blue :
+                         currentRole === 'hr' ? '#7B6BB5' :
+                         HP_TOKENS.yellow,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: isDragging ? 'grabbing' : 'pointer',
+              touchAction: 'none', // Prevent scrolling while dragging
+              boxShadow: `0 8px 24px ${
+                currentRole === 'manager' ? 'rgba(59,111,160,0.4)' :
+                currentRole === 'hr' ? 'rgba(123,107,181,0.4)' :
+                'rgba(253,185,19,0.4)'
+              }`,
+              transition: 'transform 0.1s ease-out',
+              transform: isDragging ? 'scale(1.05)' : 'scale(1)',
+            }}
+          >
+            <HPGlyph name="sparkle" size={26} color={currentRole === 'employee' ? HP_TOKENS.ink : "#fff"} />
         </button>
-
-      <TabNav tab={tab} setTab={setTab} userRole={currentRole} />
+      </div>
 
       {/* Modal Renderer */}
       {modal?.name === 'checkin'          && <CheckInModal onClose={closeModal} />}
