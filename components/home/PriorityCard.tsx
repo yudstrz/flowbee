@@ -38,6 +38,15 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
     updateState({ intention: p.title, focusTaskId: p.id, focusProgress: p.progress || 0 });
     setShowFocusToast(true);
     setTimeout(() => setShowFocusToast(false), 2000);
+
+    // Sync with Chrome Extension
+    if (typeof window !== "undefined") {
+      window.postMessage({
+        type: "FLOWBEE_SET_FOCUS",
+        goal: p.title,
+        progress: p.progress || 0
+      }, "*");
+    }
   };
   
   return (
