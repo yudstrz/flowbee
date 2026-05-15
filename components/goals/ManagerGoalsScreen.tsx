@@ -97,7 +97,8 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
     }));
   };
 
-  const handleEditProgress = (goalId: string, newProgress: number) => {
+  const handleEditProgress = async (goalId: string, newProgress: number) => {
+    // 1. Update local state immediately
     updateState((s: any) => ({
       ...s,
       goals: s.goals.map((goal: any) =>
@@ -106,24 +107,46 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
           : goal
       )
     }));
+    // 2. Persist directly to DB
+    try {
+      await fetch('/api/goals/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goalId, updates: { progress: newProgress } })
+      });
+    } catch (e) { console.error('Failed to save progress:', e); }
   };
 
-  const handleApproveGoal = (goalId: string) => {
+  const handleApproveGoal = async (goalId: string) => {
     updateState((s: any) => ({
       ...s,
       goals: s.goals.map((goal: any) =>
         String(goal.id) === String(goalId) ? { ...goal, status: 'approved' } : goal
       )
     }));
+    try {
+      await fetch('/api/goals/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goalId, updates: { status: 'approved' } })
+      });
+    } catch (e) { console.error('Failed to approve:', e); }
   };
 
-  const handleRejectGoal = (goalId: string) => {
+  const handleRejectGoal = async (goalId: string) => {
     updateState((s: any) => ({
       ...s,
       goals: s.goals.map((goal: any) =>
         String(goal.id) === String(goalId) ? { ...goal, status: 'rejected' } : goal
       )
     }));
+    try {
+      await fetch('/api/goals/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goalId, updates: { status: 'rejected' } })
+      });
+    } catch (e) { console.error('Failed to reject:', e); }
   };
 
   return (

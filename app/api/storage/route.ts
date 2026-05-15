@@ -372,7 +372,7 @@ export async function POST(request: Request) {
       });
       for (const p of state.priorities) {
         await db.execute({
-          sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
           args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
         });
       }
@@ -390,15 +390,19 @@ export async function POST(request: Request) {
       }
     }
 
-    // Sync Goals
+    // Sync Goals — only sync goals this user OWNS or newly ASSIGNED
     if (state.goals) {
-      const currentGoalIds = state.goals.map((g: any) => String(g.id));
+      // Only consider goals owned by this user for deletion logic
+      const ownedGoalIds = state.goals
+        .filter((g: any) => String(g.ownerId || '') === String(userId) || String(g.assignedById || '') === String(userId))
+        .map((g: any) => String(g.id));
+
       try {
-        if (currentGoalIds.length > 0) {
-          const placeholders = currentGoalIds.map(() => '?').join(',');
+        if (ownedGoalIds.length > 0) {
+          const placeholders = ownedGoalIds.map(() => '?').join(',');
           await db.execute({
             sql: `DELETE FROM goals WHERE (owner_id = ? OR assigned_by_id = ?) AND id NOT IN (${placeholders})`,
-            args: [userId, userId, ...currentGoalIds]
+            args: [userId, userId, ...ownedGoalIds]
           });
         } else {
           await db.execute({
@@ -411,7 +415,11 @@ export async function POST(request: Request) {
       }
 
       for (const g of state.goals) {
-        // We use INSERT OR REPLACE (UPSERT) logic
+        // Only UPSERT goals this user owns or assigned — don't overwrite other users' goals
+        const goalOwnerId = String(g.ownerId || '');
+        const goalAssignedById = String(g.assignedById || '');
+        if (goalOwnerId !== String(userId) && goalAssignedById !== String(userId)) continue;
+
         await db.execute({
           sql: `INSERT INTO goals (id, owner_id, title, progress, alignment, due_date, tone, metric, scope, parent_id, assigned_by_id, status, is_kpi) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

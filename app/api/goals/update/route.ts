@@ -1,43 +1,35 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/turso";
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/turso';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { goalId, progress, parentId, metric } = await req.json();
-    
-    if (!goalId) {
-      return NextResponse.json({ error: "goalId required" }, { status: 400 });
-    }
+    const { goalId, updates } = await request.json();
+    if (!goalId) return NextResponse.json({ error: 'goalId missing' }, { status: 400 });
 
-    const updates: string[] = [];
+    const fields: string[] = [];
     const args: any[] = [];
 
-    if (progress !== undefined) {
-      updates.push("progress = ?");
-      args.push(progress);
+    if (updates.progress !== undefined) {
+      fields.push('progress = ?');
+      args.push(updates.progress);
     }
-    if (parentId !== undefined) {
-      updates.push("parent_id = ?");
-      args.push(parentId);
-    }
-    if (metric !== undefined) {
-      updates.push("metric = ?");
-      args.push(metric);
+    if (updates.status !== undefined) {
+      fields.push('status = ?');
+      args.push(updates.status);
     }
 
-    if (updates.length === 0) {
-      return NextResponse.json({ error: "No updates provided" }, { status: 400 });
-    }
+    if (fields.length === 0) return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
 
-    args.push(goalId);
+    args.push(String(goalId));
+
     await db.execute({
-      sql: `UPDATE goals SET ${updates.join(", ")} WHERE id = ?`,
+      sql: `UPDATE goals SET ${fields.join(', ')} WHERE id = ?`,
       args
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Failed to update goal" }, { status: 500 });
+  } catch (error: any) {
+    console.error('Goal update error:', error);
+    return NextResponse.json({ error: 'Failed', details: error.message }, { status: 500 });
   }
 }

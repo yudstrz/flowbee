@@ -12,8 +12,10 @@ export async function GET(request: Request) {
     const membersRes = await db.execute({
       sql: `SELECT u.*, 
             (SELECT mood_key FROM mood_checkins WHERE user_id = u.id ORDER BY created_at DESC LIMIT 1) as mood,
-            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id AND is_done = 1) as tasks_done,
-            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id) as tasks_total
+            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id AND is_done = 1 AND date(created_at, 'localtime') = date('now', 'localtime')) as tasks_done,
+            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id AND date(created_at, 'localtime') = date('now', 'localtime')) as tasks_total,
+            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id AND is_done = 1) as all_tasks_done,
+            (SELECT COUNT(*) FROM daily_priorities WHERE user_id = u.id) as all_tasks_total
             FROM users u WHERE u.manager_id = ?`,
       args: [userId]
     });
