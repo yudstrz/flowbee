@@ -10,9 +10,11 @@ import HPGlyph from "@/components/ui/HPGlyph";
 
 interface GoalCardProps {
   g: any;
+  isReadOnly?: boolean;
+  tasks?: any[];
 }
 
-export default function GoalCard({ g }: GoalCardProps) {
+export default function GoalCard({ g, isReadOnly, tasks }: GoalCardProps) {
   const { state, updateState, awardXP } = useHP();
   const tones: Record<string, string> = { 
     sage: HP_TOKENS.sage, 
@@ -25,7 +27,9 @@ export default function GoalCard({ g }: GoalCardProps) {
   const parentGoal = g.parent_id ? state?.goals.find((item: any) => String(item.id) === String(g.parent_id)) : null;
 
   // Link to actual priorities (tasks) in state that are connected to this goal
-  const linkedTasks = state?.priorities?.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id)) || [];
+  const prioritiesToUse = tasks || state?.priorities || [];
+  // For `tasks` from manager, they might use `goalId` instead of `goal_id`.
+  const linkedTasks = prioritiesToUse.filter((p: any) => (p.goal_id && String(p.goal_id) === String(g.id)) || (p.goalId && String(p.goalId) === String(g.id)));
   const hasTasks = linkedTasks.length > 0;
   const doneTaskCount = linkedTasks.filter((p: any) => p.done).length;
   const taskProgress = hasTasks ? Math.round((doneTaskCount / linkedTasks.length) * 100) : null;
@@ -48,6 +52,7 @@ export default function GoalCard({ g }: GoalCardProps) {
   }
 
   const deleteGoal = () => {
+    if (isReadOnly) return;
     if (confirm(`Hapus goal "${g.title}"?`)) {
       updateState((s: any) => ({
         ...s,
@@ -57,6 +62,7 @@ export default function GoalCard({ g }: GoalCardProps) {
   };
 
   const toggleTask = (taskId: number) => {
+    if (isReadOnly) return;
     updateState((s: any) => {
       const taskIndex = s.priorities.findIndex((p: any) => p.id === taskId);
       if (taskIndex === -1) return s;
@@ -123,14 +129,16 @@ export default function GoalCard({ g }: GoalCardProps) {
                 fontSize: 9, fontWeight: 900, letterSpacing: 0.5
               }}>DONE</div>
             )}
-            <button 
-              onClick={(e) => { e.stopPropagation(); deleteGoal(); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
-            >
-              <div style={{ width: 14, height: 14, borderRadius: 7, background: HP_TOKENS.lineSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 10, color: HP_TOKENS.inkFade, fontWeight: 900 }}>×</span>
-              </div>
-            </button>
+            {!isReadOnly && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); deleteGoal(); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
+              >
+                <div style={{ width: 14, height: 14, borderRadius: 7, background: HP_TOKENS.lineSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 10, color: HP_TOKENS.inkFade, fontWeight: 900 }}>×</span>
+                </div>
+              </button>
+            )}
           </div>
           {parentGoal && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, marginLeft: 32 }}>
@@ -171,13 +179,15 @@ export default function GoalCard({ g }: GoalCardProps) {
             <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 900, fontSize: 9, letterSpacing: 1 }}>
               LINKED QUESTS ({doneTaskCount}/{linkedTasks.length})
             </div>
-            <button 
-              onClick={(e) => { e.stopPropagation(); updateState((s: any) => ({ ...s, modal: { name: 'manage_priorities', props: { initialGoal: g.title } } })); }}
-              style={{ background: HP_TOKENS.sageSoft, border: 'none', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <HPGlyph name="target" size={8} color={HP_TOKENS.sage} />
-              <span style={{ fontSize: 8, fontWeight: 900, color: HP_TOKENS.sage }}>QUICK ADD</span>
-            </button>
+            {!isReadOnly && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); updateState((s: any) => ({ ...s, modal: { name: 'manage_priorities', props: { initialGoal: g.title } } })); }}
+                style={{ background: HP_TOKENS.sageSoft, border: 'none', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+              >
+                <HPGlyph name="target" size={8} color={HP_TOKENS.sage} />
+                <span style={{ fontSize: 8, fontWeight: 900, color: HP_TOKENS.sage }}>QUICK ADD</span>
+              </button>
+            )}
           </div>
           {linkedTasks.map((sg: any) => (
             <div 
@@ -212,7 +222,7 @@ export default function GoalCard({ g }: GoalCardProps) {
         </div>
       )}
 
-      {!hasTasks && (
+      {!hasTasks && !isReadOnly && (
         <div style={{ 
           marginTop: 12, padding: '10px 14px', 
           background: HP_TOKENS.yellowWash, borderRadius: 10,

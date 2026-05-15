@@ -191,7 +191,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       goalId: g.id,
                       goalTitle: g.title
                     })} className="hp-tap">
-                      <GoalCard g={g} />
+                      <GoalCard g={g} isReadOnly={true} tasks={tasksForGoal} />
                     </div>
 
                     <div style={{ padding: '16px', background: HP_TOKENS.paper, borderTop: `1px solid ${HP_TOKENS.lineSoft}` }}>
