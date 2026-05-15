@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const memberPlaceholders = memberIdsOnly.length > 0 ? memberIdsOnly.map(() => '?').join(',') : "''";
     
     const goalsRes = await db.execute({
-      sql: `SELECT g.*, u.name as owner_name FROM goals g
+      sql: `SELECT g.*, u.name as joined_owner_name FROM goals g
             LEFT JOIN users u ON g.owner_id = u.id
             WHERE (g.scope = 'team' AND g.owner_id IN (${placeholders}))
             OR (g.scope = 'assigned' AND g.assigned_by_id = ?)`,
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
         scope: g.scope,
         assignedById: g.assigned_by_id,
         ownerId: g.owner_id,
-        owner: (g.owner_name as string) || 'Team Member',
+        owner: (g.joined_owner_name as string) || (g.owner_name as string) || 'Team Member',
         status: g.status || 'pending',
         is_kpi: !!g.is_kpi,
         parent_id: g.parent_id,
@@ -127,7 +127,8 @@ export async function GET(request: Request) {
         verified: !!r.is_verified,
         energy: r.energy_level,
         est: r.est_time,
-        tone: r.tone
+        tone: r.tone,
+        createdAt: r.created_at
       }));
     }
 

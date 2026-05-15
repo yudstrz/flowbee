@@ -22,36 +22,46 @@ export default function MemberLogbookModal({ onClose, memberId, memberName, goal
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<any[]>([]);
 
-  // Mocking some historical data for the UI/UX demonstration
   useEffect(() => {
+    if (!state?.managerData?.teamTasks) return;
+
     const timer = setTimeout(() => {
-      const mockLogs = [
-        {
-          date: '2026-05-15',
-          label: 'Hari ini',
-          tasks: state?.managerData?.teamTasks?.filter((t: any) => String(t.userId) === String(memberId)) || []
-        },
-        {
-          date: '2026-05-14',
-          label: 'Kemarin',
-          tasks: [
-            { id: 'h1', title: 'Finalize design system tokens', done: true, verified: true, tone: 'blue' },
-            { id: 'h2', title: 'Meeting with stakeholders', done: true, verified: true, tone: 'sage' },
-            { id: 'h3', title: 'Update documentation', done: true, verified: true, tone: 'lavender' }
-          ]
-        },
-        {
-          date: '2026-05-13',
-          label: '13 Mei',
-          tasks: [
-            { id: 'h4', title: 'User testing session #3', done: true, verified: true, tone: 'coral' },
-            { id: 'h5', title: 'Iterate based on feedback', done: true, verified: true, tone: 'yellow' }
-          ]
+      const memberTasks = state.managerData.teamTasks.filter((t: any) => String(t.userId) === String(memberId));
+      
+      // Group by date (local date)
+      const groups: Record<string, any[]> = {};
+      memberTasks.forEach((t: any) => {
+        const d = new Date(t.createdAt || Date.now());
+        const dateStr = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+        if (!groups[dateStr]) groups[dateStr] = [];
+        groups[dateStr].push(t);
+      });
+
+      // Sort dates descending
+      const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+      
+      const newLogs = sortedDates.map(dateStr => {
+        const today = new Date().toLocaleDateString('en-CA');
+        const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+        
+        let label = dateStr;
+        if (dateStr === today) label = 'Hari ini';
+        else if (dateStr === yesterday) label = 'Kemarin';
+        else {
+          const d = new Date(dateStr);
+          label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         }
-      ];
-      setLogs(mockLogs);
+
+        return {
+          date: dateStr,
+          label,
+          tasks: groups[dateStr]
+        };
+      });
+
+      setLogs(newLogs);
       setLoading(false);
-    }, 600);
+    }, 400);
     return () => clearTimeout(timer);
   }, [memberId, state?.managerData?.teamTasks]);
 
@@ -104,7 +114,7 @@ export default function MemberLogbookModal({ onClose, memberId, memberName, goal
             <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 2 }}>{goalTitle || 'KPI Progress'}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 24, fontWeight: 900, color: HP_TOKENS.sage }}>85%</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: HP_TOKENS.sage }}>{state?.goals?.find((g: any) => String(g.id) === String(goalId))?.alignment || 100}%</div>
             <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade }}>Alignment</div>
           </div>
         </div>
@@ -203,7 +213,7 @@ export default function MemberLogbookModal({ onClose, memberId, memberName, goal
                               width: 32, height: 32, borderRadius: 16, background: HP_TOKENS.sageWash,
                               display: 'flex', alignItems: 'center', justifyContent: 'center', color: HP_TOKENS.sage
                             }}>
-                              <HPGlyph name="check" size={20} />
+                              <HPGlyph name="check" size={20} stroke={3} />
                             </div>
                           )}
                         </div>

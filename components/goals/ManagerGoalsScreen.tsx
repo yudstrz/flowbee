@@ -155,29 +155,32 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                     border: `1.5px solid ${HP_TOKENS.line}`, borderBottom: 'none'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <HPAvatar name={ownerName} size={28} />
-                      <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.ink }}>
-                        {ownerName.toUpperCase()}
+                      <HPAvatar name={ownerName} size={32} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.ink, letterSpacing: '0.02em' }}>
+                          {ownerName.toUpperCase()}
+                        </div>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: HP_TOKENS.inkFade, marginTop: 1 }}>{g.is_kpi ? 'KPI TARGET' : 'GOAL'}</div>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ 
-                        fontSize: 9, fontWeight: 900, padding: '4px 10px', borderRadius: 99,
-                        background: g.status === 'pending' ? HP_TOKENS.yellow : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral,
-                        color: '#fff'
-                      }}>
-                        {g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS').toUpperCase()}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ 
+                          fontSize: 9, fontWeight: 900, padding: '4px 10px', borderRadius: 99,
+                          background: g.status === 'pending' ? HP_TOKENS.yellow : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral,
+                          color: '#fff'
+                        }}>
+                          {g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS').toUpperCase()}
+                        </div>
+                        <button 
+                          onClick={(e) => handleDeleteGoal(g.id, e)}
+                          className="hp-tap"
+                          style={{
+                            width: 24, height: 24, borderRadius: 12, border: 'none', background: 'rgba(0,0,0,0.05)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                          }}
+                        >
+                          <HPGlyph name="trash" size={12} color={HP_TOKENS.inkFade} />
+                        </button>
                       </div>
-                      <button 
-                        onClick={(e) => handleDeleteGoal(g.id, e)}
-                        className="hp-tap"
-                        style={{
-                          width: 24, height: 24, borderRadius: 12, border: 'none', background: 'rgba(255,0,0,0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
-                        }}
-                      >
-                        <HPGlyph name="trash" size={14} color={HP_TOKENS.coral} />
-                      </button>
                     </div>
                   </div>
 
@@ -199,22 +202,33 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                             <HPGlyph name="zap" size={12} color={HP_TOKENS.yellow} />
                             MENUNGGU PERSETUJUAN (ACC)
                           </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                             {pendingVerification.map((t: any) => (
                               <div key={t.id} style={{ 
-                                display: 'flex', alignItems: 'center', gap: 12, padding: 12, 
-                                background: '#fff', borderRadius: 12, border: `1.5px solid ${HP_TOKENS.yellow}40` 
+                                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', 
+                                background: '#fff', borderRadius: 18, border: `1.5px solid ${HP_TOKENS.yellow}30`,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
                               }}>
+                                <div style={{ 
+                                  width: 32, height: 32, borderRadius: 10, background: HP_TOKENS.yellow,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}>
+                                  <HPGlyph name="zap" size={16} color="#fff" />
+                                </div>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 700 }}>{t.title}</div>
-                                  <div style={{ fontSize: 10, color: HP_TOKENS.inkMute, marginTop: 2 }}>Selesai hari ini</div>
+                                  <div style={{ fontSize: 13, fontWeight: 800, color: HP_TOKENS.ink }}>{t.title}</div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                    <div style={{ padding: '2px 6px', borderRadius: 4, background: HP_TOKENS.paper, fontSize: 9, fontWeight: 800, color: HP_TOKENS.inkFade }}>{t.est || '15m'}</div>
+                                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.yellow, fontWeight: 900, fontSize: 8 }}>WAITING ACC</div>
+                                  </div>
                                 </div>
                                 <button 
-                                  onClick={() => handleVerifyTask(t.id, g.id)}
+                                  onClick={(e) => { e.stopPropagation(); handleVerifyTask(t.id, g.id); }}
                                   className="hp-tap"
                                   style={{
                                     padding: '8px 16px', borderRadius: 10, border: 'none',
-                                    background: HP_TOKENS.sage, color: '#fff', fontSize: 11, fontWeight: 900, cursor: 'pointer'
+                                    background: HP_TOKENS.sage, color: '#fff', fontSize: 11, fontWeight: 900, cursor: 'pointer',
+                                    boxShadow: `0 4px 12px ${HP_TOKENS.sage}40`
                                   }}
                                 >
                                   ACC

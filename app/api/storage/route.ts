@@ -337,7 +337,10 @@ export async function POST(request: Request) {
 
     // Sync Daily Priorities
     if (state.priorities) {
-      await db.execute({ sql: "DELETE FROM daily_priorities WHERE user_id = ?", args: [userId] });
+      await db.execute({ 
+        sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at, 'localtime') = date('now', 'localtime')", 
+        args: [userId] 
+      });
       for (const p of state.priorities) {
         await db.execute({
           sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
