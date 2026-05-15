@@ -9,6 +9,7 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   dark?: boolean;
+  noPadding?: boolean;
 }
 
 const iconBtnStyle: React.CSSProperties = {
@@ -24,7 +25,7 @@ const iconBtnStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-export default function Modal({ children, onClose, title, dark }: ModalProps) {
+export default function Modal({ children, onClose, title, dark, noPadding }: ModalProps) {
   return (
     <div 
       onClick={onClose} 
@@ -90,7 +91,7 @@ export default function Modal({ children, onClose, title, dark }: ModalProps) {
             </button>
           </div>
         )}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 30px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: noPadding ? 0 : '0 20px 30px' }}>
           {children}
         </div>
       </div>
