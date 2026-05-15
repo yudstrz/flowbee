@@ -95,14 +95,43 @@ export async function GET(request: Request) {
         sql: "SELECT * FROM sub_goals WHERE goal_id = ?",
         args: [String(r.id)]
       });
+
+      // Roll-up progress from child goals (aligned to this goal)
+      const childGoalsRes = await db.execute({
+        sql: "SELECT progress FROM goals WHERE parent_id = ?",
+        args: [String(r.id)]
+      });
+      let effectiveProgress = Number(r.progress) || 0;
+      if (childGoalsRes.rows.length > 0) {
+        effectiveProgress = Math.round(
+          childGoalsRes.rows.reduce((sum: number, cr: any) => sum + (Number(cr.progress) || 0), 0) / childGoalsRes.rows.length
+        );
+      }
+
+      // Parse due_date: detect ISO vs display format, return both
+      const rawDue = (r.due_date as string) || '';
+      let dueDisplay = rawDue;
+      let dueISO = '';
+      if (rawDue.includes('T')) {
+        // Already ISO format
+        dueISO = rawDue.slice(0, 16);
+        try {
+          const d = new Date(rawDue);
+          if (!isNaN(d.getTime())) {
+            dueDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) {}
+      }
+
       return {
         id: r.id,
         title: r.title,
-        progress: r.progress,
+        progress: effectiveProgress,
         alignment: r.alignment,
-        due: r.due_date,
+        due: dueDisplay,
+        dueISO: dueISO,
         tone: r.tone,
-        metric: r.metric,
+        metric: childGoalsRes.rows.length > 0 ? `${childGoalsRes.rows.length} aligned OKR` : r.metric,
         scope: r.scope,
         owner: (r.owner_name as string) || 'Unknown',
         ownerId: r.owner_id,
@@ -338,7 +367,7 @@ export async function POST(request: Request) {
                 due_date=excluded.due_date, tone=excluded.tone, metric=excluded.metric, 
                 scope=excluded.scope, parent_id=excluded.parent_id, assigned_by_id=excluded.assigned_by_id,
                 status=excluded.status, is_kpi=excluded.is_kpi`,
-          args: [String(g.id), String(g.ownerId || userId), g.title, g.progress, g.alignment, g.due, g.tone, g.metric, g.scope, g.parent_id || null, g.assignedById || null, g.status || 'pending', g.is_kpi ? 1 : 0]
+          args: [String(g.id), String(g.ownerId || userId), g.title, g.progress, g.alignment, g.dueISO || g.due, g.tone, g.metric, g.scope, g.parent_id || null, g.assignedById || null, g.status || 'pending', g.is_kpi ? 1 : 0]
         });
 
         // Sync Sub-goals

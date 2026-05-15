@@ -19,7 +19,30 @@ interface GoalModalProps {
 export default function GoalModal({ onClose, goal }: { onClose: () => void; goal?: any }) {
   const { state, updateState, user } = useHP();
   const [title, setTitle] = useState(goal?.title || "");
-  const [due, setDue] = useState(goal?.dueISO || "");
+
+  // Parse due date: handle ISO, or Indonesian display format ("31 Mei 2026 06.05")
+  const parseDueDate = (g: any): string => {
+    if (g?.dueISO) return g.dueISO;
+    if (!g?.due) return '';
+    const raw = g.due;
+    // Already ISO?
+    if (raw.includes('T')) return raw.slice(0, 16);
+    // Try Indonesian month names: "31 Mei 2026 06.05"
+    const months: Record<string, string> = {
+      jan: '01', feb: '02', mar: '03', apr: '04', mei: '05', jun: '06',
+      jul: '07', agu: '08', ags: '08', sep: '09', okt: '10', nov: '11', des: '12'
+    };
+    const match = raw.match(/(\d{1,2})\s+(\w+)\s+(\d{4})\s+(\d{1,2})[.:](\d{2})/i);
+    if (match) {
+      const [, day, monthStr, year, hour, minute] = match;
+      const monthKey = monthStr.toLowerCase().slice(0, 3);
+      const month = months[monthKey];
+      if (month) return `${year}-${month}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}`;
+    }
+    return '';
+  };
+
+  const [due, setDue] = useState(parseDueDate(goal));
   const [scope, setScope] = useState(goal?.scope === 'assigned' ? 'employee' : (goal?.scope || "personal"));
   const [parentId, setParentId] = useState(goal?.parent_id || "");
   const [progress, setProgress] = useState(goal?.progress || 0);

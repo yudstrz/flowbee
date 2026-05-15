@@ -28,11 +28,24 @@ export default function GoalCard({ g }: GoalCardProps) {
   const linkedTasks = state?.priorities?.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id)) || [];
   const hasTasks = linkedTasks.length > 0;
   const doneTaskCount = linkedTasks.filter((p: any) => p.done).length;
+  const taskProgress = hasTasks ? Math.round((doneTaskCount / linkedTasks.length) * 100) : null;
   
-  // Always use task-based progress when tasks are linked; otherwise use stored progress
-  const displayProgress = hasTasks 
-    ? Math.round((doneTaskCount / linkedTasks.length) * 100)
-    : (g.progress || 0);
+  // Progress from child goals (aligned to this goal)
+  const childGoals = state?.goals?.filter((item: any) => String(item.parent_id) === String(g.id)) || [];
+  const hasChildren = childGoals.length > 0;
+  const childrenProgress = hasChildren 
+    ? Math.round(childGoals.reduce((acc, curr) => acc + (curr.progress || 0), 0) / childGoals.length)
+    : null;
+
+  // Final display progress
+  let displayProgress = g.progress || 0;
+  if (hasChildren && hasTasks) {
+    displayProgress = Math.round((childrenProgress! + taskProgress!) / 2);
+  } else if (hasChildren) {
+    displayProgress = childrenProgress!;
+  } else if (hasTasks) {
+    displayProgress = taskProgress!;
+  }
 
   const deleteGoal = () => {
     if (confirm(`Hapus goal "${g.title}"?`)) {
@@ -121,7 +134,7 @@ export default function GoalCard({ g }: GoalCardProps) {
             </div>
           )}
           <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginTop: 6, marginLeft: 32, fontSize: 12 }}>
-             {hasTasks ? `${doneTaskCount}/${linkedTasks.length} task selesai` : (g.metric || 'Realisasi')} · <span style={{ fontWeight: 700 }}>Due:</span> {g.due}
+             {hasChildren ? `${childGoals.length} Aligned OKR` : hasTasks ? `${doneTaskCount}/${linkedTasks.length} task selesai` : (g.metric || 'Realisasi')} · <span style={{ fontWeight: 700 }}>Due:</span> {g.due}
           </div>
         </div>
         <HPChip tone={g.tone} size="sm">{g.alignment}% align</HPChip>

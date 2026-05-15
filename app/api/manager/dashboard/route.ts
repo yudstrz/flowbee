@@ -37,22 +37,56 @@ export async function GET(request: Request) {
     const memberPlaceholders = memberIdsOnly.length > 0 ? memberIdsOnly.map(() => '?').join(',') : "''";
     
     const goalsRes = await db.execute({
-      sql: `SELECT * FROM goals 
-            WHERE (scope = 'team' AND owner_id IN (${placeholders}))
-            OR (scope = 'assigned' AND assigned_by_id = ?)`,
+      sql: `SELECT g.*, u.name as owner_name FROM goals g
+            LEFT JOIN users u ON g.owner_id = u.id
+            WHERE (g.scope = 'team' AND g.owner_id IN (${placeholders}))
+            OR (g.scope = 'assigned' AND g.assigned_by_id = ?)`,
       args: [...memberIds, userId]
     });
 
-    const goals = goalsRes.rows.map(g => ({
-      id: g.id,
-      title: g.title,
-      progress: g.progress,
-      members: members.length + 1,
-      due: g.due_date,
-      tone: g.tone || 'blue',
-      onTrack: Number(g.progress) > 40,
-      scope: g.scope,
-      assignedById: g.assigned_by_id
+    const goals = await Promise.all(goalsRes.rows.map(async g => {
+      // Roll-up progress from child goals
+      const childRes = await db.execute({
+        sql: `SELECT progress FROM goals WHERE parent_id = ?`,
+        args: [String(g.id)]
+      });
+      let rollupProgress = Number(g.progress) || 0;
+      if (childRes.rows.length > 0) {
+        rollupProgress = Math.round(
+          childRes.rows.reduce((acc: number, r: any) => acc + (Number(r.progress) || 0), 0) / childRes.rows.length
+        );
+      }
+
+      // Parse due_date for display
+      const rawDue = (g.due_date as string) || '';
+      let dueDisplay = rawDue;
+      if (rawDue.includes('T')) {
+        try {
+          const d = new Date(rawDue);
+          if (!isNaN(d.getTime())) {
+            dueDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) {}
+      }
+
+      return {
+        id: g.id,
+        title: g.title,
+        progress: rollupProgress,
+        members: members.length + 1,
+        due: dueDisplay,
+        tone: g.tone || 'blue',
+        onTrack: rollupProgress > 40,
+        scope: g.scope,
+        assignedById: g.assigned_by_id,
+        ownerId: g.owner_id,
+        owner: (g.owner_name as string) || 'Team Member',
+        status: g.status || 'pending',
+        is_kpi: !!g.is_kpi,
+        parent_id: g.parent_id,
+        alignment: g.alignment || 100,
+        metric: childRes.rows.length > 0 ? `${childRes.rows.length} aligned OKR` : g.metric
+      };
     }));
 
     // 3. Fetch Pending Approvals (Goals or KPI tasks from team members)
