@@ -8,23 +8,11 @@ interface ShellProps {
 
 export default function Shell({ children }: ShellProps) {
   return (
-    <div className="hp-shell" style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      background: '#f0f2f5', // Background outside the app
-      minHeight: '100vh'
-    }}>
+    <div className="hp-shell min-h-screen bg-gray-100 flex justify-center">
       {/* Main Content Container */}
-      <div style={{ 
-        position: 'relative', 
-        height: '100vh', 
-        width: '100%',
-        maxWidth: '480px', // Standard mobile width for desktop view
-        background: 'var(--hp-paper)', 
-        overflow: 'hidden',
-        boxShadow: '0 0 40px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+      <div className="relative w-full max-w-md bg-white h-screen shadow-[0_0_40px_rgba(0,0,0,0.1)] overflow-hidden">
+        {/* Scrollable Area */}
+        <div className="absolute inset-0 overflow-y-auto">
           {children}
         </div>
       </div>
