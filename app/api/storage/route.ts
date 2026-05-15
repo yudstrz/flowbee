@@ -411,33 +411,50 @@ export async function POST(request: Request) {
       }
     }
 
-    // Sync Goals — only sync goals this user OWNS or newly ASSIGNED
+    // Sync Goals — only sync goals this user OWNS or ASSIGNED (never touch others')
     if (state.goals) {
-      // Only consider goals owned by this user for deletion logic
-      const ownedGoalIds = state.goals
-        .filter((g: any) => String(g.ownerId || '') === String(userId) || String(g.assignedById || '') === String(userId))
+      // Only goals strictly owned by this user are candidates for deletion
+      // Goals from teammates, company-wide, or subordinates are READ-ONLY in this user's sync
+      const myOwnedGoalIds = state.goals
+        .filter((g: any) => String(g.ownerId || '') === String(userId))
         .map((g: any) => String(g.id));
 
-      if (ownedGoalIds.length > 0) {
-        try {
-          // A manager can delete goals they own, assigned, OR goals owned by their team members
-          const deleteSql = `
-            DELETE FROM goals 
-            WHERE (
-              owner_id = ? 
-              OR assigned_by_id = ? 
-              OR owner_id IN (SELECT id FROM users WHERE manager_id = ?)
-            ) 
-            AND id NOT IN (${ownedGoalIds.map(() => '?').join(',')})
-          `;
-          const deleteArgs = [userId, userId, userId, ...ownedGoalIds];
+      // Goals this user assigned (as manager) — also owned by them conceptually
+      const myAssignedGoalIds = state.goals
+        .filter((g: any) => String(g.assignedById || '') === String(userId) && String(g.ownerId || '') !== String(userId))
+        .map((g: any) => String(g.id));
 
+      // Safe delete: only remove goals owned by this user that are no longer in state
+      // NEVER delete goals owned by other users, even if they appear in state
+      if (myOwnedGoalIds.length > 0) {
+        try {
           await db.execute({
-            sql: deleteSql,
-            args: deleteArgs
+            sql: `DELETE FROM goals 
+                  WHERE owner_id = ? 
+                  AND id NOT IN (${myOwnedGoalIds.map(() => '?').join(',')})`,
+            args: [userId, ...myOwnedGoalIds]
           });
         } catch (e) {
-          console.error("Goal deletion sync error:", e);
+          console.error("Goal deletion sync error (owned):", e);
+        }
+      } else {
+        // If user has no goals in state, do NOT delete anything —
+        // state may just be loading/incomplete; skip deletion to prevent data loss
+        // (goals will still be upserted below when user adds new ones)
+      }
+
+      // Safe delete: only remove goals assigned BY this user that are no longer in state
+      if (myAssignedGoalIds.length > 0) {
+        try {
+          await db.execute({
+            sql: `DELETE FROM goals 
+                  WHERE assigned_by_id = ? 
+                  AND owner_id != ? 
+                  AND id NOT IN (${myAssignedGoalIds.map(() => '?').join(',')})`,
+            args: [userId, userId, ...myAssignedGoalIds]
+          });
+        } catch (e) {
+          console.error("Goal deletion sync error (assigned):", e);
         }
       }
 
