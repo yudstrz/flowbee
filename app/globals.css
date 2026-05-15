@@ -104,7 +104,7 @@ button {
 .hp-app-container {
   display: flex;
   flex-direction: column-reverse;
-  height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height to fix mobile browser UI overlap */
   width: 100vw;
   overflow: hidden;
   background: var(--hp-paper);
@@ -117,7 +117,7 @@ button {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-  padding: 12px 16px 24px;
+  padding: 12px 16px max(16px, env(safe-area-inset-bottom)); /* Safe area padding for mobile */
   z-index: 50;
 }
 
@@ -209,4 +209,47 @@ button {
 
 .hp-nav-brand {
   display: none;
+}
+
+/* Modal Responsive Classes */
+.hp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(44, 42, 40, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: hpFadeIn 250ms ease;
+}
+
+.hp-modal-content {
+  width: 100%;
+  max-height: 92%;
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: hpSlideUp 350ms cubic-bezier(.2,.8,.2,1);
+}
+
+@media (min-width: 768px) {
+  .hp-modal-overlay {
+    align-items: center;
+  }
+
+  .hp-modal-content {
+    width: 90%;
+    max-width: 480px;
+    border-radius: 24px;
+    max-height: 85vh;
+    animation: hpRise 350ms cubic-bezier(.2,.8,.2,1);
+  }
+  
+  .hp-modal-handle {
+    display: none !important;
+  }
 }

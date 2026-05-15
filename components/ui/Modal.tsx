@@ -28,35 +28,17 @@ const iconBtnStyle: React.CSSProperties = {
 export default function Modal({ children, onClose, title, dark, noPadding }: ModalProps) {
   return (
     <div 
+      className="hp-modal-overlay"
       onClick={onClose} 
-      style={{
-        position: 'absolute', 
-        inset: 0, 
-        zIndex: 100,
-        background: 'rgba(44,42,40,0.45)', 
-        backdropFilter: 'blur(4px)',
-        display: 'flex', 
-        alignItems: 'flex-end', 
-        justifyContent: 'center',
-        animation: 'hpFadeIn 250ms ease',
-      }}
     >
       <div 
+        className="hp-modal-content"
         onClick={e => e.stopPropagation()} 
         style={{
-          width: '100%', 
-          maxHeight: '92%', 
           background: dark ? HP_TOKENS.ink : HP_TOKENS.paper,
-          borderTopLeftRadius: 32, 
-          borderTopRightRadius: 32,
-          boxShadow: '0 -10px 40px rgba(0,0,0,0.2)',
-          display: 'flex', 
-          flexDirection: 'column', 
-          overflow: 'hidden',
-          animation: 'hpSlideUp 350ms cubic-bezier(.2,.8,.2,1)',
         }}
       >
-        <div style={{ padding: '10px 16px 4px', display: 'flex', justifyContent: 'center' }}>
+        <div className="hp-modal-handle" style={{ padding: '10px 16px 4px', display: 'flex', justifyContent: 'center' }}>
           <div style={{ 
             width: 36, 
             height: 4, 
