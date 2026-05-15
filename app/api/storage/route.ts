@@ -137,7 +137,7 @@ export async function GET(request: Request) {
       }
 
       return {
-        id: r.id,
+        id: String(r.id), // Ensure ID is string for frontend consistency
         title: r.title,
         progress: effectiveProgress,
         alignment: r.alignment,
@@ -147,12 +147,12 @@ export async function GET(request: Request) {
         metric: childGoalsRes.rows.length > 0 ? `${childGoalsRes.rows.length} aligned OKR` : r.metric,
         scope: r.scope,
         owner: (r.joined_owner_name as string) || (r.owner_name as string) || 'Unknown',
-        ownerId: r.owner_id,
-        assignedById: r.assigned_by_id,
-        parent_id: r.parent_id,
+        ownerId: String(r.owner_id),
+        assignedById: r.assigned_by_id ? String(r.assigned_by_id) : null,
+        parent_id: r.parent_id ? String(r.parent_id) : null,
         status: r.status || 'pending',
         is_kpi: !!r.is_kpi,
-        subGoals: subGoalsRes.rows.map(sr => ({ id: sr.id, title: sr.title, done: !!sr.is_done }))
+        subGoals: subGoalsRes.rows.map(sr => ({ id: String(sr.id), title: sr.title, done: !!sr.is_done }))
       };
     }));
 
@@ -365,17 +365,33 @@ export async function POST(request: Request) {
       }
     }
 
-    // Sync Daily Priorities — ensure DELETE and INSERT use exactly the same date filter
+    // Sync Daily Priorities — Use UPSERT to avoid duplicates
     if (state.priorities) {
       try {
-        await db.execute({ 
-          sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at, 'localtime') = date('now', 'localtime')", 
-          args: [userId] 
-        });
+        // 1. Get IDs of tasks in current state for today
+        const stateTaskIds = state.priorities.map((p: any) => String(p.id));
+        
+        // 2. Delete tasks from DB that are for today but NOT in current state
+        if (stateTaskIds.length > 0) {
+          await db.execute({ 
+            sql: `DELETE FROM daily_priorities 
+                  WHERE user_id = ? 
+                  AND date(created_at, 'localtime') = date('now', 'localtime')
+                  AND id NOT IN (${stateTaskIds.map(() => '?').join(',')})`, 
+            args: [userId, ...stateTaskIds] 
+          });
+        }
+
+        // 3. Upsert current tasks
         for (const p of state.priorities) {
           await db.execute({
-            sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-            args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
+            sql: `INSERT INTO daily_priorities (id, user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone, created_at) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                  ON CONFLICT(id) DO UPDATE SET 
+                  title=excluded.title, goal_title=excluded.goal_title, goal_id=excluded.goal_id, 
+                  energy_level=excluded.energy_level, est_time=excluded.est_time, 
+                  is_done=excluded.is_done, is_verified=excluded.is_verified, tone=excluded.tone`,
+            args: [p.id, userId, p.title, p.goal || null, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
           });
         }
       } catch (e) {
@@ -402,25 +418,27 @@ export async function POST(request: Request) {
         .filter((g: any) => String(g.ownerId || '') === String(userId) || String(g.assignedById || '') === String(userId))
         .map((g: any) => String(g.id));
 
-      try {
-        // A manager can delete goals they own, assigned, OR goals owned by their team members
-        const deleteSql = `
-          DELETE FROM goals 
-          WHERE (
-            owner_id = ? 
-            OR assigned_by_id = ? 
-            OR owner_id IN (SELECT id FROM users WHERE manager_id = ?)
-          ) 
-          AND id NOT IN (${ownedGoalIds.length > 0 ? ownedGoalIds.map(() => '?').join(',') : "''"})
-        `;
-        const deleteArgs = [userId, userId, userId, ...ownedGoalIds];
+      if (ownedGoalIds.length > 0) {
+        try {
+          // A manager can delete goals they own, assigned, OR goals owned by their team members
+          const deleteSql = `
+            DELETE FROM goals 
+            WHERE (
+              owner_id = ? 
+              OR assigned_by_id = ? 
+              OR owner_id IN (SELECT id FROM users WHERE manager_id = ?)
+            ) 
+            AND id NOT IN (${ownedGoalIds.map(() => '?').join(',')})
+          `;
+          const deleteArgs = [userId, userId, userId, ...ownedGoalIds];
 
-        await db.execute({
-          sql: deleteSql,
-          args: deleteArgs
-        });
-      } catch (e) {
-        console.error("Goal deletion sync error:", e);
+          await db.execute({
+            sql: deleteSql,
+            args: deleteArgs
+          });
+        } catch (e) {
+          console.error("Goal deletion sync error:", e);
+        }
       }
 
       for (const g of state.goals) {

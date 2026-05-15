@@ -74,25 +74,43 @@ export default function IntentionCard({ state, setState }: IntentionCardProps) {
           <HPGlyph name="target" size={16} color={HP_TOKENS.ink} />
           <div style={{ ...HP_TEXT.h, fontSize: 14 }}>Set Your Focus</div>
         </div>
-        <input 
-          autoFocus 
-          value={draft} 
-          onChange={e => setDraft(e.target.value)} 
-          placeholder="I will focus on..."
-          style={{
-            width: '100%', 
-            padding: '14px', 
-            borderRadius: 12,
-            border: `1.5px solid ${HP_TOKENS.yellow}`, 
-            fontFamily: HP_FONT, 
-            fontSize: 15, 
-            fontWeight: 700,
-            color: HP_TOKENS.ink, 
-            outline: 'none', 
-            background: '#fff', 
-            boxSizing: 'border-box',
-          }}
-        />
+        <div style={{ position: 'relative' }}>
+          <select 
+            autoFocus 
+            value={draft} 
+            onChange={e => setDraft(e.target.value)} 
+            style={{
+              width: '100%', 
+              padding: '14px 40px 14px 14px', 
+              borderRadius: 12,
+              border: `1.5px solid ${HP_TOKENS.yellow}`, 
+              fontFamily: HP_FONT, 
+              fontSize: 15, 
+              fontWeight: 700,
+              color: HP_TOKENS.ink, 
+              outline: 'none', 
+              background: '#fff', 
+              boxSizing: 'border-box',
+              appearance: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">-- Pilih Target Fokus --</option>
+            {state.goals && state.goals.length > 0 ? (
+              state.goals.map((g: any) => (
+                <option key={g.id} value={g.title}>{g.title} ({g.scope})</option>
+              ))
+            ) : (
+              <option disabled>Belum ada OKR yang tersedia</option>
+            )}
+            <option value="General Focus">General Focus / Lainnya</option>
+          </select>
+          <div style={{ 
+            position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' 
+          }}>
+            <HPGlyph name="arrow" size={12} color={HP_TOKENS.inkMute} />
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
           <button onClick={() => setEditing(false)} style={ghostBtn}>Cancel</button>
           <button onClick={save} style={primaryBtn}>Save Focus</button>
