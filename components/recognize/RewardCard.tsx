@@ -34,7 +34,7 @@ const GLYPH_MAP: Record<string, string> = {
 };
 
 export default function RewardCard({ title, points, tone, glyph, onRedeem }: RewardCardProps) {
-  const { state, updateState, user } = useHP();
+  const { state, updateState, user, notify } = useHP();
   const cfg = TONE_CONFIG[tone] || TONE_CONFIG.sage;
   const icon = glyph ?? GLYPH_MAP[title] ?? 'sparkle';
 
@@ -43,7 +43,7 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
 
   const handleRedeem = () => {
     if (isLocked) {
-      // Small feedback instead of a hard alert if possible, but keep functionality
+      notify('Koin Tidak Cukup', `Kamu butuh ${points - userCoins} koin lagi untuk menukar reward ini.`, 'warning');
       return;
     }
 
@@ -63,6 +63,7 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
           { id: Date.now(), title, points, date: new Date().toLocaleDateString('id-ID'), glyph: icon }
         ]
       }));
+      notify('Reward Ditukar! 🎁', `Kamu berhasil menukarkan ${title}.`, 'success');
     }
   };
 

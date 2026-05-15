@@ -16,7 +16,7 @@ interface GoalCardProps {
 }
 
 export default function GoalCard({ g, isReadOnly, tasks, onEditProgress }: GoalCardProps) {
-  const { state, updateState, awardXP } = useHP();
+  const { state, updateState, awardXP, notify } = useHP();
   const tones: Record<string, string> = { 
     sage: HP_TOKENS.sage, 
     blue: HP_TOKENS.blue, 
@@ -59,6 +59,7 @@ export default function GoalCard({ g, isReadOnly, tasks, onEditProgress }: GoalC
         ...s,
         goals: s.goals.filter((item: any) => item.id !== g.id)
       }));
+      notify('Goal Dihapus', `Goal "${g.title}" telah dihapus.`, 'info');
     }
   };
 
@@ -74,9 +75,7 @@ export default function GoalCard({ g, isReadOnly, tasks, onEditProgress }: GoalC
       // Award XP and show confetti if completing
       if (!wasDone) {
         awardXP('priority_complete', `Selesaikan: ${task.title}`);
-        // Confetti is usually handled in HomeScreen, but we can trigger it if we have access to setConfetti
-        // Since setConfetti is local to HomeScreen, we might need a more global way or just skip it here.
-        // For now, let's just update the state.
+        notify('Task Selesai! 🎉', `${task.title} berhasil diselesaikan.`, 'success');
       }
 
       const newPriorities = [...s.priorities];

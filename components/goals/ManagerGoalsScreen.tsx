@@ -24,7 +24,7 @@ const TONE: Record<string, string> = { sage: HP_TOKENS.sage, blue: HP_TOKENS.blu
 const TONE_SOFT: Record<string, string> = { sage: HP_TOKENS.sageSoft, blue: HP_TOKENS.blueSoft, lavender: HP_TOKENS.lavenderSoft, yellow: HP_TOKENS.yellowSoft, coral: HP_TOKENS.coralSoft };
 
 export default function ManagerGoalsScreen({ openModal }: Props) {
-  const { state, user, updateState } = useHP();
+  const { state, user, updateState, notify } = useHP();
   const [activeTab, setActiveTab] = useState<'okr' | 'members' | 'attendance' | 'personal'>('okr');
 
   if (!state || !user) return null;
@@ -124,6 +124,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goalId, updates: { progress: newProgress } })
       });
+      notify('Progress Tersimpan', `Progress KPI diupdate menjadi ${newProgress}%.`, 'info');
     } catch (e) { console.error('Failed to save progress:', e); }
   };
 
@@ -140,6 +141,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goalId, updates: { status: 'approved' } })
       });
+      notify('OKR Approved', `Goal telah disetujui.`, 'success');
     } catch (e) { console.error('Failed to approve:', e); }
   };
 
@@ -156,6 +158,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goalId, updates: { status: 'rejected' } })
       });
+      notify('OKR Rejected', `Goal telah ditolak.`, 'error');
     } catch (e) { console.error('Failed to reject:', e); }
   };
 
@@ -448,6 +451,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ goalId: g.id, updates: { status: 'approved' } })
                                 });
+                                notify('KPI Approved', `KPI ${g.title} telah disetujui.`, 'success');
                               } catch (err) { console.error(err); }
                             }}
                             className="hp-tap"
@@ -471,6 +475,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ goalId: g.id, updates: { status: 'rejected' } })
                                 });
+                                notify('KPI Rejected', `KPI ${g.title} telah ditolak.`, 'error');
                               } catch (err) { console.error(err); }
                             }}
                             className="hp-tap"

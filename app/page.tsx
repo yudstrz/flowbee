@@ -73,6 +73,7 @@ import EditUserModal from "@/components/modals/EditUserModal";
 import CreateUserModal from "@/components/modals/CreateUserModal";
 import DepartmentManagerModal from "@/components/modals/DepartmentManagerModal";
 import MemberLogbookModal from "@/components/modals/MemberLogbookModal";
+import HPToastContainer from "@/components/ui/HPToastContainer";
 
 
 
@@ -337,7 +338,7 @@ function AppContent() {
       {modal?.name === 'manage_depts'    && <DepartmentManagerModal onClose={closeModal} />}
       {modal?.name === 'member_logbook'  && <MemberLogbookModal onClose={closeModal} {...modal.props} />}
 
-
+      <HPToastContainer />
     </div>
   );
 }

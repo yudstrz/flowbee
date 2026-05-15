@@ -76,6 +76,9 @@ interface HPContextType {
   resetData: () => Promise<void>;
   syncSkillProgress: (source: string, amount: number) => void;
   awardXP: (actionType: string, description?: string) => Promise<void>;
+  toasts: any[];
+  notify: (title: string, message?: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
+  dismissToast: (id: string) => void;
 }
 
 const HPContext = createContext<HPContextType | undefined>(undefined);
@@ -101,6 +104,7 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<HPState | null>(null);
   const [user, setUser] = useState<HPUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [toasts, setToasts] = useState<any[]>([]);
 
   // 2. REFS
   const userRef = useRef<HPUser | null>(null);
@@ -125,6 +129,15 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
       }
       return next;
     });
+  }, []);
+
+  const notify = useCallback((title: string, message?: string, type: 'success' | 'info' | 'warning' | 'error' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, title, message, type }]);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
   const fetchData = useCallback(async (userId: string) => {
@@ -347,7 +360,8 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
     <HPContext.Provider value={{ 
       state, user, updateState, updateUser, setUserRole, login, logout, awardXP,
       loading, refresh,
-      refreshSurveys, resetData, syncSkillProgress 
+      refreshSurveys, resetData, syncSkillProgress,
+      toasts, notify, dismissToast
     }}>
       {children}
     </HPContext.Provider>
