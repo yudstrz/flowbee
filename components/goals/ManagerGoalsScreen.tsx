@@ -126,7 +126,12 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
               const activeTasks = tasksForGoal.filter((t: any) => !t.done);
 
               return (
-                <div key={g.id} style={{ marginBottom: 12 }}>
+                <div 
+                  key={g.id} 
+                  style={{ marginBottom: 12, cursor: 'pointer' }} 
+                  className="hp-tap"
+                  onClick={() => openModal('new_goal', { goal: g })}
+                >
                   <div style={{ 
                     padding: '10px 16px', 
                     background: g.status === 'pending' ? HP_TOKENS.yellowWash : g.status === 'approved' ? HP_TOKENS.sageWash : HP_TOKENS.coralWash, 

@@ -360,6 +360,24 @@ export async function POST(request: Request) {
 
     // Sync Goals
     if (state.goals) {
+      const currentGoalIds = state.goals.map((g: any) => String(g.id));
+      try {
+        if (currentGoalIds.length > 0) {
+          const placeholders = currentGoalIds.map(() => '?').join(',');
+          await db.execute({
+            sql: `DELETE FROM goals WHERE (owner_id = ? OR assigned_by_id = ?) AND id NOT IN (${placeholders})`,
+            args: [userId, userId, ...currentGoalIds]
+          });
+        } else {
+          await db.execute({
+            sql: `DELETE FROM goals WHERE (owner_id = ? OR assigned_by_id = ?)`,
+            args: [userId, userId]
+          });
+        }
+      } catch (e) {
+        console.error("Goal deletion sync error:", e);
+      }
+
       for (const g of state.goals) {
         // We use INSERT OR REPLACE (UPSERT) logic
         await db.execute({

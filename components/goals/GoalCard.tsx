@@ -116,6 +116,13 @@ export default function GoalCard({ g }: GoalCardProps) {
               <HPGlyph name="target" size={14} color={toneColor} />
             </div>
             <div style={{ ...HP_TEXT.h, fontSize: 16 }}>{g.title}</div>
+            {displayProgress >= 100 && (
+              <div style={{ 
+                padding: '2px 8px', borderRadius: 6, 
+                background: HP_TOKENS.sageSoft, color: HP_TOKENS.sage,
+                fontSize: 9, fontWeight: 900, letterSpacing: 0.5
+              }}>DONE</div>
+            )}
             <button 
               onClick={(e) => { e.stopPropagation(); deleteGoal(); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
@@ -134,7 +141,7 @@ export default function GoalCard({ g }: GoalCardProps) {
             </div>
           )}
           <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginTop: 6, marginLeft: 32, fontSize: 12 }}>
-             {hasChildren ? `${childGoals.length} Aligned OKR` : hasTasks ? `${doneTaskCount}/${linkedTasks.length} task selesai` : (g.metric || 'Realisasi')} · <span style={{ fontWeight: 700 }}>Due:</span> {g.due}
+             {hasChildren ? `${childGoals.length} Aligned OKR` : hasTasks ? `${doneTaskCount}/${linkedTasks.length} task selesai` : (displayProgress >= 100 ? 'Target Tercapai ✨' : (g.metric || 'Realisasi'))} · <span style={{ fontWeight: 700 }}>Due:</span> {g.due}
           </div>
         </div>
         <HPChip tone={g.tone} size="sm">{g.alignment}% align</HPChip>
