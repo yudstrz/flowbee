@@ -28,7 +28,7 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
 
   const rewards = state?.rewards || [];
   const history = state?.rewardHistory || [];
-  const userPoints = state?.points ?? 0;
+  const userCoins = state?.coins ?? 0;
 
   const filtered = activeCategory === "Semua"
     ? rewards
@@ -40,14 +40,13 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
       alert(`Maaf, stok "${reward.title}" sedang habis. 🌱`);
       return;
     }
-    if (state.points < reward.points) {
-      alert(`Poin tidak cukup! Kamu butuh ${reward.points} poin, tapi baru punya ${state.points} poin. 🌱`);
+    if (state.coins < reward.points) {
+      alert(`Koin tidak cukup! Kamu butuh ${reward.points} koin, tapi baru punya ${state.coins} koin. 🌱`);
       return;
     }
-    if (confirm(`Tukar ${reward.points} poin dengan "${reward.title}"?`)) {
+    if (confirm(`Tukar ${reward.points} koin dengan "${reward.title}"?`)) {
       updateState((s: any) => ({
         ...s,
-        points: s.points - reward.points,
         coins: s.coins - reward.points,
         rewards: s.rewards.map((r: any) => r.id === reward.id ? { ...r, stock: r.stock - 1 } : r),
         rewardHistory: [
@@ -102,8 +101,8 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
             }}>
               <span style={{ fontSize: 24 }}>🏆</span>
               <div>
-                <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>POIN KAMU</div>
-                <div style={{ ...HP_TEXT.h, fontSize: 22, color: HP_TOKENS.ink }}>{userPoints.toLocaleString()} poin</div>
+                <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute }}>KOIN KAMU</div>
+                <div style={{ ...HP_TEXT.h, fontSize: 22, color: HP_TOKENS.ink }}>{userCoins.toLocaleString()} koin</div>
               </div>
             </div>
 
@@ -131,7 +130,7 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {filtered.map(reward => {
                 const cfg = toneConfig[reward.tone] ?? toneConfig.sage;
-                const canAfford = userPoints >= reward.points;
+                const canAfford = userCoins >= reward.points;
 
                 return (
                   <div
@@ -160,7 +159,7 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
                           padding: '3px 10px', borderRadius: 99, fontSize: 10, fontWeight: 800,
                           background: cfg.bg, color: '#fff', fontFamily: HP_FONT,
                         }}>
-                          {reward.points} POIN
+                          {reward.points} KOIN
                         </span>
                         <span style={{ 
                           fontSize: 10, fontWeight: 900, 
@@ -197,7 +196,7 @@ export default function AllRewardsModal({ onClose }: AllRewardsModalProps) {
               <div style={{ textAlign: 'center', padding: '40px 20px', color: HP_TOKENS.inkMute }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🏜️</div>
                 <div style={{ ...HP_TEXT.h, fontSize: 15 }}>Belum ada reward yang ditukar.</div>
-                <div style={{ ...HP_TEXT.body, fontSize: 13, marginTop: 4 }}>Ayo kumpulkan poin dengan memberi apresiasi!</div>
+                <div style={{ ...HP_TEXT.body, fontSize: 13, marginTop: 4 }}>Ayo kumpulkan koin dengan memberi apresiasi!</div>
               </div>
             ) : (
               [...history].reverse().map((h: any, idx) => (

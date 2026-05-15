@@ -33,10 +33,21 @@ export default function ManagerRecognizeScreen({ openModal }: Props) {
       {/* Rewards */}
       <SectionHeader icon="trophy" label="Reward Tersedia" action="Semua" onAction={() => openModal('all_rewards')} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <RewardCard title="Extra cuti 1 hari" points={125} tone="sage" />
-        <RewardCard title="Voucher lunch 100k" points={60} tone="yellow" />
-        <RewardCard title="Workshop intensif" points={200} tone="blue" />
-        <RewardCard title="Donasi sosial" points={25} tone="coral" />
+        {(state.rewards || []).slice(0, 4).map((r: any) => (
+          <div 
+            key={r.id} 
+            onClick={() => openModal('all_rewards', { selected: r.id })} 
+            className="hp-tap"
+            style={{ opacity: r.stock === 0 ? 0.6 : 1 }}
+          >
+            <RewardCard 
+              title={r.title} 
+              points={r.points} 
+              tone={r.tone as any} 
+              glyph={r.glyph}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

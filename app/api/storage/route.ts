@@ -40,6 +40,16 @@ export async function GET(request: Request) {
          stock INTEGER DEFAULT 999
        )`);
     } catch (e) { }
+    try {
+      await db.execute(`CREATE TABLE IF NOT EXISTS user_rewards (
+         id TEXT PRIMARY KEY,
+         user_id TEXT NOT NULL,
+         title TEXT NOT NULL,
+         points INTEGER NOT NULL,
+         date TEXT NOT NULL,
+         glyph TEXT
+       )`);
+    } catch (e) { }
 
     // 1. Fetch User
     const userRes = await db.execute({
@@ -235,6 +245,14 @@ export async function GET(request: Request) {
       stock: Number(r.stock)
     }));
 
+    const rewardHistoryRes = await db.execute({
+      sql: "SELECT * FROM user_rewards WHERE user_id = ? ORDER BY date DESC",
+      args: [userId]
+    });
+    const rewardHistory = rewardHistoryRes.rows.map(r => ({
+      id: r.id, title: r.title, points: r.points, date: r.date, glyph: r.glyph
+    }));
+
     const state = {
       mood: latestMood?.mood_key || 'calm',
       energy: latestMood?.energy_key || 'mid',
@@ -253,7 +271,7 @@ export async function GET(request: Request) {
       coins: user.coins,
       notifications: 0,
       rewards,
-      rewardHistory: [],
+      rewardHistory,
       logbook: [],
       lastActivityDate: userRow.last_activity_at,
       penaltyActive: false,
@@ -332,6 +350,17 @@ export async function POST(request: Request) {
         }
       } catch (e) {
         console.error("Reward sync error:", e);
+      }
+    }
+
+    // Sync Reward History
+    if (state.rewardHistory) {
+      await db.execute({ sql: "DELETE FROM user_rewards WHERE user_id = ?", args: [userId] });
+      for (const rh of state.rewardHistory) {
+        await db.execute({
+          sql: `INSERT INTO user_rewards (id, user_id, title, points, date, glyph) VALUES (?, ?, ?, ?, ?, ?)`,
+          args: [String(rh.id), userId, rh.title, rh.points, rh.date, rh.glyph || 'gift']
+        });
       }
     }
 

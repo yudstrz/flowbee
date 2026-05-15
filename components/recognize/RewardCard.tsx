@@ -38,8 +38,8 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
   const cfg = TONE_CONFIG[tone] || TONE_CONFIG.sage;
   const icon = glyph ?? GLYPH_MAP[title] ?? 'sparkle';
 
-  const userPoints = state?.points ?? 0;
-  const isLocked = userPoints < points;
+  const userCoins = state?.coins ?? 0;
+  const isLocked = userCoins < points;
 
   const handleRedeem = () => {
     if (isLocked) {
@@ -54,10 +54,10 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
 
     if (!state) return;
 
-    if (confirm(`Tukar ${points} poin dengan "${title}"?`)) {
+    if (confirm(`Tukar ${points} koin dengan "${title}"?`)) {
       updateState((s: any) => ({
         ...s,
-        points: s.points - points,
+        coins: s.coins - points,
         rewardHistory: [
           ...(s.rewardHistory || []),
           { id: Date.now(), title, points, date: new Date().toLocaleDateString('id-ID'), glyph: icon }
@@ -109,7 +109,7 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
           fontFamily: HP_FONT, fontWeight: 900, fontSize: 11,
           letterSpacing: 0.5
         }}>
-          {points} pts
+          {points} koin
         </div>
       </div>
 
@@ -124,9 +124,9 @@ export default function RewardCard({ title, points, tone, glyph, onRedeem }: Rew
         {isLocked ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
             <div style={{ flex: 1, height: 4, background: HP_TOKENS.lineSoft, borderRadius: 2 }}>
-              <div style={{ width: `${(userPoints / points) * 100}%`, height: '100%', background: HP_TOKENS.inkFade, borderRadius: 2 }} />
+              <div style={{ width: `${(userCoins / points) * 100}%`, height: '100%', background: HP_TOKENS.inkFade, borderRadius: 2 }} />
             </div>
-            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade }}>{points - userPoints} lagi</div>
+            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkFade }}>{points - userCoins} lagi</div>
           </div>
         ) : (
           <div style={{ 
