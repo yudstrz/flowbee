@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_config_json TEXT,
     user_role_context TEXT,
     is_onboarded INTEGER DEFAULT 0, -- Added for onboarding flow
+    current_intention TEXT, -- Added for daily focus persistence
+    focus_task_id INTEGER, -- Added for daily focus task link
+    focus_progress INTEGER DEFAULT 0, -- Added for daily focus progress tracking
     last_activity_at DATETIME,
     personal_wellbeing_goal TEXT,
     wellbeing_routine TEXT,

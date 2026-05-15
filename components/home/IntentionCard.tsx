@@ -34,11 +34,18 @@ export default function IntentionCard({ state, setState }: IntentionCardProps) {
     setState((s: any) => {
       // Try to find a priority task that matches this intention title
       const matchingTask = s.priorities.find((p: any) => p.title === draft);
+      // Or try to find a goal that matches
+      const matchingGoal = s.goals?.find((g: any) => g.title === draft);
+
+      const initialProgress = matchingTask 
+        ? (matchingTask.progress || 0) 
+        : (matchingGoal ? (matchingGoal.progress || 0) : 0);
+
       return { 
         ...s, 
         intention: draft,
         focusTaskId: matchingTask ? matchingTask.id : null,
-        focusProgress: matchingTask ? (matchingTask.progress || 0) : 0
+        focusProgress: initialProgress
       };
     }); 
     setEditing(false); 

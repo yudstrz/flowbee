@@ -17,7 +17,7 @@ interface WorkCheckInModalProps {
 }
 
 export default function WorkCheckInModal({ onClose }: WorkCheckInModalProps) {
-  const { state, updateState } = useHP();
+  const { state, updateState, user } = useHP();
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [notes, setNotes] = useState("");
@@ -29,6 +29,10 @@ export default function WorkCheckInModal({ onClose }: WorkCheckInModalProps) {
   const doneCount = priorities.filter((p: any) => p.done).length;
   const totalCount = priorities.length;
   const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+
+  const currentFocusProgress = state.focusTaskId 
+    ? (priorities.find((p: any) => p.id === state.focusTaskId)?.progress || 0)
+    : (state.goals?.find((g: any) => g.title === state.intention)?.progress || state.focusProgress || 0);
 
   const askAI = async () => {
     setIsLoading(true);
@@ -176,12 +180,12 @@ Jawab dengan tone yang asik dan menyemangati.`,
           
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, alignItems: 'center' }}>
-              <div style={{ ...HP_TEXT.small, fontWeight: 800, color: HP_TOKENS.ink }}>Realisasi: <span style={{ color: HP_TOKENS.yellow, fontSize: 18 }}>{state.focusProgress || 0}%</span></div>
+              <div style={{ ...HP_TEXT.small, fontWeight: 800, color: HP_TOKENS.ink }}>Realisasi: <span style={{ color: HP_TOKENS.yellow, fontSize: 18 }}>{currentFocusProgress}%</span></div>
               <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Geser untuk update</div>
             </div>
             <input 
               type="range" min="0" max="100" 
-              value={state.focusProgress || 0} 
+              value={currentFocusProgress} 
               onChange={(e) => updateFocusProgress(parseInt(e.target.value))}
               style={{ 
                 width: '100%', 
@@ -226,13 +230,13 @@ Jawab dengan tone yang asik dan menyemangati.`,
             </button>
           </div>
         </HPCard>
-      ) : (
+      ) : user?.role !== 'employee' ? (
         <HPCard padding={20} style={{ marginBottom: 24, textAlign: 'center', background: HP_TOKENS.paper, border: `1.5px dashed ${HP_TOKENS.line}` }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🎯</div>
           <div style={{ ...HP_TEXT.h, fontSize: 15, color: HP_TOKENS.ink }}>Belum ada Task yang di-Set sebagai Fokus.</div>
           <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginTop: 4 }}>Klik ikon ✨ pada daftar target di bawah untuk mulai fokus.</div>
         </HPCard>
-      )}
+      ) : null}
 
       <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontWeight: 900, fontSize: 10, letterSpacing: 1, marginBottom: 12 }}>DAFTAR TARGET HARI INI</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -273,7 +277,7 @@ Jawab dengan tone yang asik dan menyemangati.`,
             </div>
           </HPCard>
         ))}
-        {totalCount === 0 && (
+        {totalCount === 0 && user?.role !== 'employee' && (
           <div style={{ textAlign: 'center', padding: '20px', color: HP_TOKENS.inkMute }}>
             Belum ada target untuk hari ini.
           </div>

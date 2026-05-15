@@ -67,20 +67,22 @@ export default function WellbeingScreen({ openModal }: WellbeingScreenProps) {
         </div>
       </div>
 
-      <HPCard style={{ background: `linear-gradient(135deg, ${HP_TOKENS.sageWash}, ${HP_TOKENS.blueWash})`, border: 'none' }} padding={18}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ position: 'relative' }}>
-            <ReadinessRing value={wellbeing.score || avg}/>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute }}>Wellbeing score</div>
-            <div style={{ ...HP_TEXT.title, fontSize: 22, marginTop: 2 }}>Kamu sedang baik 🌱</div>
-            <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkSoft, fontWeight: 600, marginTop: 4 }}>
-              Naik 3 poin dari minggu lalu
+      {ctxUser?.role !== 'employee' && (
+        <HPCard style={{ background: `linear-gradient(135deg, ${HP_TOKENS.sageWash}, ${HP_TOKENS.blueWash})`, border: 'none' }} padding={18}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ position: 'relative' }}>
+              <ReadinessRing value={wellbeing.score || avg}/>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute }}>Wellbeing score</div>
+              <div style={{ ...HP_TEXT.title, fontSize: 22, marginTop: 2 }}>Kamu sedang baik 🌱</div>
+              <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkSoft, fontWeight: 600, marginTop: 4 }}>
+                Naik 3 poin dari minggu lalu
+              </div>
             </div>
           </div>
-        </div>
-      </HPCard>
+        </HPCard>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 12 }}>
         {wellbeing.dims.map((d: any) => <DimensionCard key={d.key} d={d}/>)}

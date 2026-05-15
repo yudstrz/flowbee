@@ -10,14 +10,22 @@ export async function GET(request: Request) {
 
     // Auto-migrate: ensure tables exist
     try {
-      // Use a more standard syntax for checking if column exists in SQLite/LibSQL
       const tableInfo = await db.execute(`PRAGMA table_info(users)`);
-      const hasOnboarded = tableInfo.rows.some(r => r.name === 'is_onboarded');
-      if (!hasOnboarded) {
+      const columns = tableInfo.rows.map(r => r.name);
+      if (!columns.includes('is_onboarded')) {
         await db.execute("ALTER TABLE users ADD COLUMN is_onboarded INTEGER DEFAULT 0");
       }
+      if (!columns.includes('current_intention')) {
+        await db.execute("ALTER TABLE users ADD COLUMN current_intention TEXT");
+      }
+      if (!columns.includes('focus_task_id')) {
+        await db.execute("ALTER TABLE users ADD COLUMN focus_task_id INTEGER");
+      }
+      if (!columns.includes('focus_progress')) {
+        await db.execute("ALTER TABLE users ADD COLUMN focus_progress INTEGER DEFAULT 0");
+      }
     } catch (e) {
-      console.error("Migration error (users):", e);
+      console.error("Migration error (users columns):", e);
     }
     try {
       const tableInfo = await db.execute(`PRAGMA table_info(daily_priorities)`);
@@ -257,7 +265,7 @@ export async function GET(request: Request) {
       mood: latestMood?.mood_key || 'calm',
       energy: latestMood?.energy_key || 'mid',
       tag: latestMood?.tag || null,
-      intention: "",
+      intention: (userRow.current_intention as string) || "",
       priorities,
       weeklyPriorities: [],
       habits,
@@ -284,7 +292,9 @@ export async function GET(request: Request) {
       personalWellbeingGoal: (userRow.personal_wellbeing_goal as string) || "",
       wellbeingRoutine,
       contacts,
-      onboarded: !!userRow.is_onboarded
+      onboarded: !!userRow.is_onboarded,
+      focusTaskId: userRow.focus_task_id ? Number(userRow.focus_task_id) : null,
+      focusProgress: Number(userRow.focus_progress) || 0
     };
 
     return NextResponse.json({ state, user });
@@ -306,7 +316,7 @@ export async function POST(request: Request) {
     // Update User
     try {
       await db.execute({
-        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ?, is_onboarded = ? WHERE id = ?`,
+        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ?, is_onboarded = ?, current_intention = ?, focus_task_id = ?, focus_progress = ? WHERE id = ?`,
         args: [
           user.name, user.streak, user.points, user.coins, user.level, user.rank,
           user.avatarImage || null,
@@ -315,25 +325,26 @@ export async function POST(request: Request) {
           state.personalWellbeingGoal || "",
           JSON.stringify(state.wellbeingRoutine || []),
           state.onboarded ? 1 : 0,
+          state.intention || "",
+          state.focusTaskId || null,
+          state.focusProgress || 0,
           userId
         ]
       });
     } catch (e: any) {
       console.error("Failed to update user state:", e);
-      // Fallback if column truly doesn't exist despite migration attempt
-      if (e.message?.includes('is_onboarded')) {
-        await db.execute({
-          sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ? WHERE id = ?`,
-          args: [
-            user.name, user.streak, user.points, user.coins, user.level, user.rank,
-            user.avatarImage || null,
-            user.userRole || user.role, state.lastActivityDate,
-            state.personalWellbeingGoal || "",
-            JSON.stringify(state.wellbeingRoutine || []),
-            userId
-          ]
-        });
-      } else throw e;
+      // Fallback: Try a simpler update if new columns cause issues (e.g. migration hasn't run)
+      await db.execute({
+        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ? WHERE id = ?`,
+        args: [
+          user.name, user.streak, user.points, user.coins, user.level, user.rank,
+          user.avatarImage || null,
+          user.userRole || user.role, state.lastActivityDate,
+          state.personalWellbeingGoal || "",
+          JSON.stringify(state.wellbeingRoutine || []),
+          userId
+        ]
+      });
     }
 
     // Sync Rewards (Only HR can manage global rewards)

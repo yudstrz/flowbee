@@ -496,8 +496,8 @@ export default function HomeScreen({ openModal }: any) {
             icon="phone" 
             label="Kontak Penting" 
             count={String(state.contacts?.length || 0)} 
-            action="+ Kelola"
-            onAction={() => openModal('manage_contacts')}
+            action={user.role === 'hr' ? "+ Kelola" : undefined}
+            onAction={user.role === 'hr' ? () => openModal('manage_contacts') : undefined}
           />
           
           {/* Public Contacts */}
@@ -584,7 +584,7 @@ export default function HomeScreen({ openModal }: any) {
             icon="target" 
             label="Task Management (Realisasi)" 
             count={`${done}/${total}`} 
-            action="Manage"
+            action={user.role !== 'employee' ? "Manage" : undefined}
             onAction={() => openModal('manage_priorities')}
           />
           
@@ -671,7 +671,7 @@ export default function HomeScreen({ openModal }: any) {
               priorities.map((p: any) => (
                 <PriorityCard key={p.id} p={p} onToggle={() => togglePriority(p.id)}/>
               ))
-            ) : (
+            ) : user.role !== 'employee' ? (
               <div style={{ 
                 padding: '40px 20px', textAlign: 'center', 
                 background: HP_TOKENS.card, borderRadius: 24, border: `1.5px dashed ${HP_TOKENS.line}`
@@ -688,7 +688,7 @@ export default function HomeScreen({ openModal }: any) {
                   + Tambah Target
                 </button>
               </div>
-            )}
+            ) : null}
             
             {priorities.length > 0 && (
               <button onClick={() => openModal('focus')} className="hp-tap" style={{
