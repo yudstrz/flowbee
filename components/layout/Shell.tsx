@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { HP_TOKENS } from "@/lib/constants";
 
 interface ShellProps {
   children: React.ReactNode;
@@ -8,11 +9,32 @@ interface ShellProps {
 
 export default function Shell({ children }: ShellProps) {
   return (
-    <div className="hp-shell min-h-screen bg-gray-100 flex justify-center">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#F3F4F6', // bg-gray-100
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%'
+    }}>
       {/* Main Content Container */}
-      <div className="relative w-full max-w-md bg-white h-screen shadow-[0_0_40px_rgba(0,0,0,0.1)] overflow-hidden">
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: '448px', // max-w-md
+        backgroundColor: HP_TOKENS.paper, // bg-white/paper
+        height: '100vh',
+        boxShadow: '0 0 40px rgba(0,0,0,0.1)',
+        overflow: 'hidden'
+      }}>
         {/* Scrollable Area */}
-        <div className="absolute inset-0 overflow-y-auto">
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflowY: 'auto'
+        }}>
           {children}
         </div>
       </div>
