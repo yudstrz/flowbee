@@ -66,9 +66,11 @@ Jawab dengan tone yang asik dan menyemangati.`,
   const updateFocusProgress = (val: number) => {
     updateState((s: any) => {
       const newPriorities = s.priorities.map((p: any) => p.id === s.focusTaskId ? { ...p, progress: val } : p);
-      const updatedTask = newPriorities.find((p: any) => p.id === s.focusTaskId);
+      const updatedTask = s.focusTaskId ? newPriorities.find((p: any) => p.id === s.focusTaskId) : null;
       
       let newGoals = s.goals;
+      
+      // Case 1: Linked via specific Task ID
       if (updatedTask?.goal_id && s.goals) {
         newGoals = s.goals.map((g: any) => {
           if (String(g.id) === String(updatedTask.goal_id)) {
@@ -84,6 +86,15 @@ Jawab dengan tone yang asik dan menyemangati.`,
               progress: newProgress, 
               metric: `${doneCount}/${tasksForGoal.length} task selesai (${newProgress}%)` 
             };
+          }
+          return g;
+        });
+      } 
+      // Case 2: Fallback - Match by intention title directly to a Goal (if no task linked)
+      else if (!s.focusTaskId && s.intention && s.goals) {
+        newGoals = s.goals.map((g: any) => {
+          if (g.title === s.intention) {
+            return { ...g, progress: val, metric: `Realisasi Fokus (${val}%)` };
           }
           return g;
         });
@@ -142,7 +153,7 @@ Jawab dengan tone yang asik dan menyemangati.`,
         </div>
       </div>
 
-      {state.focusTaskId ? (
+      {(state.focusTaskId || state.intention) ? (
         <HPCard padding={20} style={{ 
           marginBottom: 24, 
           background: `linear-gradient(135deg, ${HP_TOKENS.yellowWash} 0%, #fff 100%)`, 
@@ -155,7 +166,11 @@ Jawab dengan tone yang asik dan menyemangati.`,
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.ink, fontWeight: 900, letterSpacing: 0.5 }}>TARGET FOKUS SAAT INI</div>
-              <div style={{ ...HP_TEXT.h, fontSize: 16, color: HP_TOKENS.ink }}>{priorities.find((p: any) => p.id === state.focusTaskId)?.title}</div>
+              <div style={{ ...HP_TEXT.h, fontSize: 16, color: HP_TOKENS.ink }}>
+                {state.focusTaskId 
+                  ? priorities.find((p: any) => p.id === state.focusTaskId)?.title 
+                  : state.intention}
+              </div>
             </div>
           </div>
           

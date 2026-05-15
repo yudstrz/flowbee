@@ -31,7 +31,16 @@ export default function IntentionCard({ state, setState }: IntentionCardProps) {
   const [draft, setDraft] = React.useState(state.intention || '');
 
   const save = () => { 
-    setState((s: any) => ({ ...s, intention: draft })); 
+    setState((s: any) => {
+      // Try to find a priority task that matches this intention title
+      const matchingTask = s.priorities.find((p: any) => p.title === draft);
+      return { 
+        ...s, 
+        intention: draft,
+        focusTaskId: matchingTask ? matchingTask.id : null,
+        focusProgress: matchingTask ? (matchingTask.progress || 0) : 0
+      };
+    }); 
     setEditing(false); 
   };
 
