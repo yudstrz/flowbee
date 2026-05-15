@@ -26,13 +26,20 @@ export default function WorkCheckInModal({ onClose }: WorkCheckInModalProps) {
   if (!state) return null;
 
   const priorities = state.priorities || [];
-  const doneCount = priorities.filter((p: any) => p.done).length;
-  const totalCount = priorities.length;
-  const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
-
   const currentFocusProgress = state.focusTaskId 
     ? (priorities.find((p: any) => p.id === state.focusTaskId)?.progress || 0)
     : (state.goals?.find((g: any) => g.title === state.intention)?.progress || state.focusProgress || 0);
+
+  const hasExtraFocus = !state.focusTaskId && state.intention;
+  
+  const doneCount = priorities.filter((p: any) => p.done).length + (hasExtraFocus && currentFocusProgress === 100 ? 1 : 0);
+  const totalCount = priorities.length + (hasExtraFocus ? 1 : 0);
+  
+  // Weighted progress calculation
+  const totalTaskProgress = priorities.reduce((sum, p) => sum + (p.done ? 100 : (p.progress || 0)), 0);
+  const overallProgressValue = totalCount > 0 
+    ? (totalTaskProgress + (hasExtraFocus ? currentFocusProgress : 0)) / totalCount 
+    : 0;
 
   const askAI = async () => {
     setIsLoading(true);
@@ -114,13 +121,13 @@ Jawab dengan tone yang asik dan menyemangati.`,
   };
 
   const saveRealisasi = () => {
-    if (!state.focusTaskId) return;
-    const task = priorities.find((p: any) => p.id === state.focusTaskId);
+    if (!state.focusTaskId && !state.intention) return;
+    const task = state.focusTaskId ? priorities.find((p: any) => p.id === state.focusTaskId) : null;
     const log = {
       id: Date.now(),
       type: 'realization_check',
-      title: task?.title || "Focus Task",
-      progress: state.focusProgress,
+      title: task?.title || state.intention || "Focus Task",
+      progress: currentFocusProgress,
       notes: notes,
       date: new Date().toLocaleDateString('id-ID'),
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
@@ -140,7 +147,7 @@ Jawab dengan tone yang asik dan menyemangati.`,
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.sage, fontWeight: 900, letterSpacing: 1, marginBottom: 4 }}>OVERALL PROGRESS</div>
-            <div style={{ ...HP_TEXT.h, fontSize: 24 }}>{Math.round(progress)}% <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600 }}>Tercapai</span></div>
+            <div style={{ ...HP_TEXT.h, fontSize: 24 }}>{Math.round(overallProgressValue)}% <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600 }}>Tercapai</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ ...HP_TEXT.h, fontSize: 18, color: HP_TOKENS.sage }}>{doneCount}/{totalCount}</div>
@@ -149,7 +156,7 @@ Jawab dengan tone yang asik dan menyemangati.`,
         </div>
         <div style={{ height: 12, background: HP_TOKENS.lineSoft, borderRadius: 6, overflow: 'hidden', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
           <div style={{ 
-            width: `${progress}%`, height: '100%', 
+            width: `${overallProgressValue}%`, height: '100%', 
             background: `linear-gradient(to right, ${HP_TOKENS.sage}, #4ADE80)`,
             transition: '1.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
             boxShadow: `0 0 12px ${HP_TOKENS.sage}40`
