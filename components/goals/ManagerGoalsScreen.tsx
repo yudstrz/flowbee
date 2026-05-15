@@ -97,6 +97,35 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
     }));
   };
 
+  const handleEditProgress = (goalId: string, newProgress: number) => {
+    updateState((s: any) => ({
+      ...s,
+      goals: s.goals.map((goal: any) =>
+        String(goal.id) === String(goalId)
+          ? { ...goal, progress: newProgress }
+          : goal
+      )
+    }));
+  };
+
+  const handleApproveGoal = (goalId: string) => {
+    updateState((s: any) => ({
+      ...s,
+      goals: s.goals.map((goal: any) =>
+        String(goal.id) === String(goalId) ? { ...goal, status: 'approved' } : goal
+      )
+    }));
+  };
+
+  const handleRejectGoal = (goalId: string) => {
+    updateState((s: any) => ({
+      ...s,
+      goals: s.goals.map((goal: any) =>
+        String(goal.id) === String(goalId) ? { ...goal, status: 'rejected' } : goal
+      )
+    }));
+  };
+
   return (
     <div style={{ padding: '0 16px 120px', fontFamily: HP_FONT }}>
       <ScreenHeader title="Tim & OKR" subtitle="Pantau goal tim dan performa anggota" />
@@ -206,7 +235,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       goalTitle: g.title,
                       childGoals: childGoals
                     })} className="hp-tap">
-                      <GoalCard g={g} isReadOnly={true} tasks={allRelatedTasks} />
+                      <GoalCard g={g} isReadOnly={true} tasks={allRelatedTasks} onEditProgress={(p) => handleEditProgress(String(g.id), p)} />
                     </div>
 
                     {/* ── Aligned Child Goals (embedded inside parent) ── */}
@@ -219,10 +248,11 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {childGoals.map((child: any) => {
                             const childTasks = teamTasks.filter((t: any) => t.goalId && String(t.goalId) === String(child.id));
+                            const childToneColor = TONE[child.tone] || HP_TOKENS.sage;
                             return (
                               <div key={child.id} style={{
                                 padding: '14px 16px', background: '#fff', borderRadius: 16,
-                                border: `1.5px solid ${HP_TOKENS.lineSoft}`,
+                                border: `1.5px solid ${child.status === 'pending' ? `${HP_TOKENS.yellow}40` : HP_TOKENS.lineSoft}`,
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
                               }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -230,10 +260,10 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                       <div style={{
                                         width: 22, height: 22, borderRadius: 7,
-                                        background: `${TONE[child.tone] || HP_TOKENS.sage}15`,
+                                        background: `${childToneColor}15`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                                       }}>
-                                        <HPGlyph name="target" size={12} color={TONE[child.tone] || HP_TOKENS.sage} />
+                                        <HPGlyph name="target" size={12} color={childToneColor} />
                                       </div>
                                       <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{child.title}</div>
                                       {(child.progress || 0) >= 100 && (
@@ -243,18 +273,48 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                                           fontSize: 8, fontWeight: 900
                                         }}>DONE</div>
                                       )}
+                                      <div style={{
+                                        padding: '2px 7px', borderRadius: 5, fontSize: 8, fontWeight: 900,
+                                        background: child.status === 'approved' ? HP_TOKENS.sageSoft : child.status === 'rejected' ? HP_TOKENS.coralSoft : HP_TOKENS.yellowSoft,
+                                        color: child.status === 'approved' ? HP_TOKENS.sage : child.status === 'rejected' ? HP_TOKENS.coral : '#8A6814',
+                                      }}>{(child.status || 'pending').toUpperCase()}</div>
                                     </div>
                                     <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 4, marginLeft: 30, fontSize: 10 }}>
-                                      {child.status === 'approved' ? '✅ Approved' : child.status === 'pending' ? '⏳ On Progress' : child.status?.toUpperCase() || ''} · Due: {child.due}
+                                      Due: {child.due}
                                     </div>
                                   </div>
                                   <div style={{ textAlign: 'right' }}>
-                                    <div style={{ ...HP_TEXT.h, fontSize: 14, color: TONE[child.tone] || HP_TOKENS.sage }}>{child.progress || 0}%</div>
+                                    <div style={{ ...HP_TEXT.h, fontSize: 14, color: childToneColor }}>{child.progress || 0}%</div>
                                   </div>
                                 </div>
                                 <div style={{ marginTop: 10 }}>
                                   <HPBar value={child.progress || 0} tone={child.tone} height={5} />
                                 </div>
+                                {/* Approve / Reject for child goal */}
+                                {child.status === 'pending' && (
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }} onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleApproveGoal(String(child.id)); }}
+                                      className="hp-tap"
+                                      style={{
+                                        flex: 1, padding: '8px', borderRadius: 10, border: 'none',
+                                        background: HP_TOKENS.sage, color: '#fff', fontFamily: HP_FONT,
+                                        fontWeight: 900, fontSize: 11, cursor: 'pointer',
+                                        boxShadow: `0 2px 8px ${HP_TOKENS.sage}40`
+                                      }}
+                                    >Approve</button>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleRejectGoal(String(child.id)); }}
+                                      className="hp-tap"
+                                      style={{
+                                        flex: 1, padding: '8px', borderRadius: 10,
+                                        border: `1.5px solid ${HP_TOKENS.coral}`,
+                                        background: '#fff', color: HP_TOKENS.coral, fontFamily: HP_FONT,
+                                        fontWeight: 900, fontSize: 11, cursor: 'pointer'
+                                      }}
+                                    >Reject</button>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
