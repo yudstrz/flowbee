@@ -299,62 +299,70 @@ export default function HomeScreen({ openModal }: any) {
       <CelebrationOverlay show={celebrate} onComplete={() => setCelebrate(false)} />
 
       <div style={{ position: 'relative', zIndex: 1, padding: '0 16px' }} className="hp-stagger">
+        {/* Top Header */}
+        <div style={{ 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+          padding: '24px 4px 16px' 
+        }}>
+          <div>
+            <div style={{ ...HP_TEXT.display, fontSize: 28, color: HP_TOKENS.ink }}>Dashboard</div>
+            <div style={{ ...HP_TEXT.body, fontSize: 13, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Selamat datang kembali, {user.name.split(' ')[0]}! ✨</div>
+          </div>
+          
+          <button 
+            onClick={() => openModal('system_guide')}
+            style={{
+              width: 44, height: 44, borderRadius: 14, border: `1px solid ${HP_TOKENS.line}`,
+              background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+            }}
+            className="hp-tap"
+          >
+            <HPGlyph name="book" size={20} color={HP_TOKENS.blue} />
+          </button>
+        </div>
+
+        {rawState?.notificationPermission !== 'granted' && (
+          <div style={{ 
+            background: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coralWash : HP_TOKENS.blueSoft, 
+            padding: '16px 20px', borderRadius: 20, marginBottom: 20,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+            border: `1px solid ${rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue}40`,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+          }}>
+            <div style={{ ...HP_TEXT.small, color: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue, fontWeight: 700, fontSize: 12, lineHeight: 1.4 }}>
+              {rawState?.notificationPermission === 'denied' 
+                ? "Notifikasi diblokir. Klik ikon gembok di URL bar untuk mengizinkan. 🔓"
+                : "Aktifkan notifikasi browser agar tidak ketinggalan tugas penting! 🔔"}
+            </div>
+            {rawState?.notificationPermission !== 'denied' && (
+              <button 
+                onClick={async () => {
+                  const granted = await requestNotificationPermission();
+                  if (!granted) alert("Gagal mengaktifkan notifikasi. Cek pengaturan browser.");
+                }}
+                style={{ 
+                  background: HP_TOKENS.blue, color: '#fff', border: 'none', padding: '10px 20px', 
+                  borderRadius: 14, fontSize: 12, fontWeight: 900, cursor: 'pointer', flexShrink: 0,
+                  boxShadow: `0 4px 12px ${HP_TOKENS.blue}40`
+                }}
+                className="hp-tap"
+              >
+                Aktifkan
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Top Card - Profile & Level */}
         <div style={{ 
           background: HP_TOKENS.card,
           borderRadius: 24,
           padding: '24px',
-          marginTop: 16,
           border: `1px solid ${HP_TOKENS.line}`,
           boxShadow: '0 8px 24px rgba(0,0,0,0.02)',
           position: 'relative',
         }}>
-          <div style={{ position: 'absolute', top: 18, right: 18 }}>
-             <button 
-               onClick={(e) => {
-                 e.stopPropagation();
-                 openModal('system_guide');
-               }}
-               style={{
-                 width: 34, height: 34, borderRadius: 10, border: `1px solid ${HP_TOKENS.line}`,
-                 background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                 cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-               }}
-               className="hp-tap"
-             >
-               <HPGlyph name="book" size={16} color={HP_TOKENS.blue} />
-              </button>
-          </div>
-
-          {rawState?.notificationPermission !== 'granted' && (
-            <div style={{ 
-              background: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coralWash : HP_TOKENS.blueSoft, 
-              padding: '12px 16px', borderRadius: 16, marginBottom: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-              border: `1px solid ${rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue}30`
-            }}>
-              <div style={{ ...HP_TEXT.small, color: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue, fontWeight: 700, fontSize: 11, lineHeight: 1.4 }}>
-                {rawState?.notificationPermission === 'denied' 
-                  ? "Notifikasi diblokir browser. Klik ikon gembok di URL bar untuk mengizinkan kembali. 🔓"
-                  : "Aktifkan notifikasi browser untuk pengingat istirahat & tugas! 🔔"}
-              </div>
-              {rawState?.notificationPermission !== 'denied' && (
-                <button 
-                  onClick={async () => {
-                    const granted = await requestNotificationPermission();
-                    if (!granted) alert("Gagal mengaktifkan notifikasi. Pastikan browser tidak memblokir pop-up.");
-                  }}
-                  style={{ 
-                    background: HP_TOKENS.blue, color: '#fff', border: 'none', padding: '8px 16px', 
-                    borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0
-                  }}
-                  className="hp-tap"
-                >
-                  Aktifkan
-                </button>
-              )}
-            </div>
-          )}
 
           <div 
             onClick={() => openModal('profile_editor')}
@@ -385,7 +393,7 @@ export default function HomeScreen({ openModal }: any) {
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <div className="hp-tap" style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12,
                 background: HP_TOKENS.yellowSoft, fontFamily: HP_FONT, fontWeight: 900, fontSize: 14, color: HP_TOKENS.ink,

@@ -121,24 +121,34 @@ Jawab dengan tone yang asik dan menyemangati.`,
   };
 
   const saveRealisasi = () => {
-    if (!state.focusTaskId && !state.intention) return;
-    const task = state.focusTaskId ? priorities.find((p: any) => p.id === state.focusTaskId) : null;
-    const log = {
-      id: Date.now(),
-      type: 'realization_check',
-      title: task?.title || state.intention || "Focus Task",
-      progress: currentFocusProgress,
-      notes: notes,
-      date: new Date().toLocaleDateString('id-ID'),
-      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-    };
-    updateState((s: any) => ({
-      ...s,
-      logbook: [log, ...(s.logbook || [])]
-    }));
-    setShowNotes(false);
-    setNotes("");
-    alert("Realisasi berhasil disimpan ke Logbook! ✨");
+    updateState((s: any) => {
+      const newPriorities = s.priorities.map((p: any) => {
+        if (s.focusTaskId && p.id === s.focusTaskId) {
+          return { ...p, notes: notes, lastUpdate: new Date().toISOString() };
+        }
+        return p;
+      });
+
+      let newGoals = s.goals;
+      if (!s.focusTaskId && s.intention && s.goals) {
+        newGoals = s.goals.map((g: any) => {
+          if (g.title === s.intention) {
+            return { ...g, notes: notes, lastUpdate: new Date().toISOString() };
+          }
+          return g;
+        });
+      }
+
+      return {
+        ...s,
+        priorities: newPriorities,
+        goals: newGoals
+      };
+    });
+    
+    // Show success toast instead of alert
+    alert("Progres dan catatan berhasil diperbarui! ✨");
+    onClose();
   };
 
   return (
@@ -210,7 +220,7 @@ Jawab dengan tone yang asik dan menyemangati.`,
               Catatan Progres (Realisasi)
             </div>
             <textarea 
-              placeholder="Ceritakan progresmu... Kenapa baru segini? Apa yang sudah selesai? Ada kendala apa? (misal: Nunggu feedback tim, butuh riset lebih dalam)"
+              placeholder="Ceritakan progresmu... Ada kendala apa? (Catatan ini akan disimpan pada detail tugas)"
               value={notes}
               onChange={e => setNotes(e.target.value)}
               style={{
@@ -222,26 +232,19 @@ Jawab dengan tone yang asik dan menyemangati.`,
             />
             <button 
               onClick={saveRealisasi}
-              disabled={!notes.trim()}
               className="hp-tap"
               style={{ 
-                marginTop: 12, width: '100%', padding: '14px', borderRadius: 12,
-                background: notes.trim() ? HP_TOKENS.ink : HP_TOKENS.line, 
-                color: notes.trim() ? HP_TOKENS.yellow : HP_TOKENS.inkFade, 
+                marginTop: 12, width: '100%', padding: '16px', borderRadius: 16,
+                background: HP_TOKENS.ink, 
+                color: HP_TOKENS.yellow, 
                 border: 'none',
-                fontFamily: HP_FONT, fontWeight: 800, fontSize: 13, cursor: notes.trim() ? 'pointer' : 'default',
-                boxShadow: notes.trim() ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+                fontFamily: HP_FONT, fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
               }}
             >
-              Simpan ke Logbook Activity
+              Selesai & Update Progres
             </button>
           </div>
-        </HPCard>
-      ) : user?.role !== 'employee' ? (
-        <HPCard padding={20} style={{ marginBottom: 24, textAlign: 'center', background: HP_TOKENS.paper, border: `1.5px dashed ${HP_TOKENS.line}` }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🎯</div>
-          <div style={{ ...HP_TEXT.h, fontSize: 15, color: HP_TOKENS.ink }}>Belum ada Task yang di-Set sebagai Fokus.</div>
-          <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginTop: 4 }}>Klik ikon ✨ pada daftar target di bawah untuk mulai fokus.</div>
         </HPCard>
       ) : null}
 
