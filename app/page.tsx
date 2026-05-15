@@ -72,6 +72,8 @@ import ContactEditorModal from "@/components/modals/ContactEditorModal";
 import EditUserModal from "@/components/modals/EditUserModal";
 import CreateUserModal from "@/components/modals/CreateUserModal";
 import DepartmentManagerModal from "@/components/modals/DepartmentManagerModal";
+import MemberLogbookModal from "@/components/modals/MemberLogbookModal";
+
 
 
 // ─── Role pill badge colors ──────────────────────────────────────────────────
@@ -333,6 +335,8 @@ function AppContent() {
       {modal?.name === 'edit_user'       && <EditUserModal onClose={closeModal} {...modal.props} />}
       {modal?.name === 'create_user'     && <CreateUserModal onClose={closeModal} {...modal.props} />}
       {modal?.name === 'manage_depts'    && <DepartmentManagerModal onClose={closeModal} />}
+      {modal?.name === 'member_logbook'  && <MemberLogbookModal onClose={closeModal} {...modal.props} />}
+
 
     </div>
   );

@@ -130,7 +130,12 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                   key={g.id} 
                   style={{ marginBottom: 12, cursor: 'pointer' }} 
                   className="hp-tap"
-                  onClick={() => openModal('new_goal', { goal: g })}
+                  onClick={() => openModal('member_logbook', { 
+                    memberId: g.ownerId, 
+                    memberName: ownerName,
+                    goalId: g.id,
+                    goalTitle: g.title
+                  })}
                 >
                   <div style={{ 
                     padding: '10px 16px', 
@@ -155,7 +160,12 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                   </div>
 
                   <HPCard padding={0} style={{ borderRadius: '0 0 20px 20px', overflow: 'hidden', borderTop: 'none' }}>
-                    <div onClick={() => openModal('new_goal', { goal: g })} className="hp-tap">
+                    <div onClick={() => openModal('member_logbook', { 
+                      memberId: g.ownerId, 
+                      memberName: ownerName,
+                      goalId: g.id,
+                      goalTitle: g.title
+                    })} className="hp-tap">
                       <GoalCard g={g} />
                     </div>
 
