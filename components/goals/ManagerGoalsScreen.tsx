@@ -81,6 +81,16 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
     }
   };
 
+  const handleDeleteGoal = async (goalId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Hapus KPI ini?")) return;
+
+    updateState((s: any) => ({
+      ...s,
+      goals: s.goals.filter((g: any) => String(g.id) !== String(goalId))
+    }));
+  };
+
   return (
     <div style={{ padding: '0 16px 120px', fontFamily: HP_FONT }}>
       <ScreenHeader title="Tim & OKR" subtitle="Pantau goal tim dan performa anggota" />
@@ -150,12 +160,24 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                         {ownerName.toUpperCase()}
                       </div>
                     </div>
-                    <div style={{ 
-                      fontSize: 9, fontWeight: 900, padding: '4px 10px', borderRadius: 99,
-                      background: g.status === 'pending' ? HP_TOKENS.yellow : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral,
-                      color: '#fff'
-                    }}>
-                      {g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS').toUpperCase()}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ 
+                        fontSize: 9, fontWeight: 900, padding: '4px 10px', borderRadius: 99,
+                        background: g.status === 'pending' ? HP_TOKENS.yellow : g.status === 'approved' ? HP_TOKENS.sage : HP_TOKENS.coral,
+                        color: '#fff'
+                      }}>
+                        {g.status === 'pending' ? 'ON PROGRESS' : (g.status || 'ON PROGRESS').toUpperCase()}
+                      </div>
+                      <button 
+                        onClick={(e) => handleDeleteGoal(g.id, e)}
+                        className="hp-tap"
+                        style={{
+                          width: 24, height: 24, borderRadius: 12, border: 'none', background: 'rgba(255,0,0,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                        }}
+                      >
+                        <HPGlyph name="trash" size={14} color={HP_TOKENS.coral} />
+                      </button>
                     </div>
                   </div>
 
