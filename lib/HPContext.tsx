@@ -292,15 +292,56 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id, loading]);
 
+  // Auto-sync to DB with debounce + keepalive (survives page refresh)
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestSyncRef = useRef<{ state: any; user: any } | null>(null);
+
   useEffect(() => {
     if (!loading && user && state) {
-      fetch("/api/storage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, user, userId: user.id }),
-      });
+      // Store latest data for sync
+      latestSyncRef.current = { state, user };
+
+      // Debounce: wait 800ms after last state change before syncing
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+      syncTimerRef.current = setTimeout(() => {
+        const data = latestSyncRef.current;
+        if (!data) return;
+        try {
+          fetch("/api/storage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ state: data.state, user: data.user, userId: data.user.id }),
+            keepalive: true, // survives page unload/refresh
+          });
+        } catch (e) {
+          console.error("Sync error:", e);
+        }
+      }, 800);
     }
+    return () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    };
   }, [state, user, loading]);
+
+  // Also sync immediately on page unload (backup)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const data = latestSyncRef.current;
+      if (data) {
+        try {
+          const blob = new Blob(
+            [JSON.stringify({ state: data.state, user: data.user, userId: data.user.id })],
+            { type: 'application/json' }
+          );
+          navigator.sendBeacon('/api/storage', blob);
+        } catch (e) {
+          // sendBeacon fallback
+        }
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   return (
     <HPContext.Provider value={{ 
