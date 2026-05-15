@@ -140,6 +140,8 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const [syncing, setSyncing] = useState(false);
+
   const fetchData = useCallback(async (userId: string) => {
     try {
       const res = await fetch(`/api/storage?userId=${userId}`);
@@ -314,41 +316,67 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
       // Store latest data for sync
       latestSyncRef.current = { state, user };
 
-      // Debounce: wait 800ms after last state change before syncing
+      // Debounce: wait 500ms after last state change before syncing (reduced from 800ms)
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
-      syncTimerRef.current = setTimeout(() => {
+      syncTimerRef.current = setTimeout(async () => {
         const data = latestSyncRef.current;
         if (!data) return;
+        
         try {
-          fetch("/api/storage", {
+          setSyncing(true);
+          // Optimize payload: remove huge/redundant data before sending to server
+          const syncState = { ...data.state };
+          delete syncState.hrData;
+          delete syncState.managerData;
+          delete syncState.surveys;
+          delete syncState.feed;
+          delete syncState.rewards; // Server handles its own rewards fetching for non-HR
+          
+          const response = await fetch("/api/storage", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ state: data.state, user: data.user, userId: data.user.id }),
-            keepalive: true, // survives page unload/refresh
+            body: JSON.stringify({ state: syncState, user: data.user, userId: data.user.id }),
+            // Removed keepalive: true for regular syncs to avoid 64KB limit
           });
+          
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            console.error("Sync failed:", errData.error || response.statusText);
+            // Optionally notify user on persistent failure
+          }
         } catch (e) {
           console.error("Sync error:", e);
+        } finally {
+          setSyncing(false);
         }
-      }, 800);
+      }, 500);
     }
     return () => {
       if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
     };
   }, [state, user, loading]);
 
-  // Also sync immediately on page unload (backup)
+  // Also sync immediately on page unload (backup) with stripped payload
   useEffect(() => {
     const handleBeforeUnload = () => {
       const data = latestSyncRef.current;
       if (data) {
         try {
-          const blob = new Blob(
-            [JSON.stringify({ state: data.state, user: data.user, userId: data.user.id })],
-            { type: 'application/json' }
-          );
-          navigator.sendBeacon('/api/storage', blob);
+          const syncState = { ...data.state };
+          delete syncState.hrData;
+          delete syncState.managerData;
+          delete syncState.surveys;
+          delete syncState.feed;
+          delete syncState.rewards;
+
+          const payload = JSON.stringify({ state: syncState, user: data.user, userId: data.user.id });
+          // Only send if within beacon limits (usually 64KB)
+          if (payload.length < 60000) {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon('/api/storage', blob);
+          }
         } catch (e) {
-          // sendBeacon fallback
+          // silent fallback
         }
       }
     };

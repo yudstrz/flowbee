@@ -57,7 +57,7 @@ export default function GoalCard({ g, isReadOnly, tasks, onEditProgress }: GoalC
     if (confirm(`Hapus goal "${g.title}"?`)) {
       updateState((s: any) => ({
         ...s,
-        goals: s.goals.filter((item: any) => item.id !== g.id)
+        goals: s.goals.filter((item: any) => String(item.id) !== String(g.id))
       }));
       notify('Goal Dihapus', `Goal "${g.title}" telah dihapus.`, 'info');
     }
@@ -66,7 +66,7 @@ export default function GoalCard({ g, isReadOnly, tasks, onEditProgress }: GoalC
   const toggleTask = (taskId: number) => {
     if (isReadOnly) return;
     updateState((s: any) => {
-      const taskIndex = s.priorities.findIndex((p: any) => p.id === taskId);
+      const taskIndex = s.priorities.findIndex((p: any) => String(p.id) === String(taskId));
       if (taskIndex === -1) return s;
       
       const task = s.priorities[taskIndex];

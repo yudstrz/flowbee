@@ -75,7 +75,7 @@ export async function GET(request: Request) {
 
     // 2. Fetch State components
     const prioritiesRes = await db.execute({
-      sql: "SELECT * FROM daily_priorities WHERE user_id = ? AND date(created_at) = date('now')",
+      sql: "SELECT * FROM daily_priorities WHERE user_id = ? AND date(created_at, 'localtime') = date('now', 'localtime')",
       args: [userId]
     });
     const priorities = prioritiesRes.rows.map(r => ({
@@ -310,7 +310,8 @@ export async function POST(request: Request) {
         args: [
           user.name, user.streak, user.points, user.coins, user.level, user.rank,
           user.avatarImage || null,
-          user.userRole || user.role, state.lastActivityDate,
+          user.userRole || user.role || 'employee', 
+          state.lastActivityDate || new Date().toISOString(),
           state.personalWellbeingGoal || "",
           JSON.stringify(state.wellbeingRoutine || []),
           state.onboarded ? 1 : 0,
@@ -368,7 +369,7 @@ export async function POST(request: Request) {
     if (state.priorities) {
       try {
         await db.execute({ 
-          sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at) = date('now')", 
+          sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at, 'localtime') = date('now', 'localtime')", 
           args: [userId] 
         });
         for (const p of state.priorities) {

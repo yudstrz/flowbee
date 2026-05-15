@@ -66,8 +66,8 @@ export default function ManagePrioritiesModal({ onClose, initialGoal }: { onClos
 
   const deletePriority = (id: number) => {
     updateState((s: any) => {
-      const deletedTask = s.priorities.find((p: any) => p.id === id);
-      const newPriorities = s.priorities.filter((p: any) => p.id !== id);
+      const deletedTask = s.priorities.find((p: any) => String(p.id) === String(id));
+      const newPriorities = s.priorities.filter((p: any) => String(p.id) !== String(id));
       
       // Recalculate goal progress after removing the task
       let updatedGoals = s.goals;

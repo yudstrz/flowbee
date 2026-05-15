@@ -112,13 +112,13 @@ export default function GoalModal({ onClose, goal }: { onClose: () => void; goal
       const newEntries = creators.map((ownerId, idx) => {
         const emp = allEmployees.find((e: any) => String(e.id) === String(ownerId));
         return {
-          id: Date.now() + idx,
+          id: String(Date.now() + idx), // Ensure ID is a string
           title,
           progress: progress,
           alignment: 100,
           owner: emp?.name || user?.name || "You",
-          ownerId: ownerId,
-          assignedById: scope === 'employee' ? user?.id : null,
+          ownerId: String(ownerId), // Ensure ownerId is a string
+          assignedById: scope === 'employee' ? String(user?.id) : null,
           due: displayDue,
           dueISO: due,
           tone: scope === 'personal' ? "sage" : scope === 'team' ? "blue" : scope === 'employee' ? "lavender" : "yellow",
