@@ -44,6 +44,7 @@ interface HPState {
   onboarded?: boolean;
   focusTaskId?: number | null;
   focusProgress?: number;
+  notificationPermission?: NotificationPermission;
 }
 
 export type UserRole = 'hr' | 'manager' | 'employee';
@@ -77,8 +78,10 @@ interface HPContextType {
   syncSkillProgress: (source: string, amount: number) => void;
   awardXP: (actionType: string, description?: string) => Promise<void>;
   toasts: any[];
-  notify: (title: string, message?: string, type?: 'success' | 'info' | 'warning' | 'error') => void;
+  notify: (title: string, message?: string, type?: 'success' | 'info' | 'warning' | 'error', native?: boolean) => void;
   dismissToast: (id: string) => void;
+  requestNotificationPermission: () => Promise<boolean>;
+  sendNativeNotification: (title: string, body?: string) => void;
 }
 
 const HPContext = createContext<HPContextType | undefined>(undefined);
@@ -131,9 +134,34 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const notify = useCallback((title: string, message?: string, type: 'success' | 'info' | 'warning' | 'error' = 'info') => {
+  const notify = useCallback((title: string, message?: string, type: 'success' | 'info' | 'warning' | 'error' = 'info', native: boolean = false) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, title, message, type }]);
+
+    if (native && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body: message,
+          icon: '/icon.png'
+        });
+      }
+    }
+  }, []);
+
+  const requestNotificationPermission = useCallback(async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return false;
+    const permission = await Notification.requestPermission();
+    updateState({ notificationPermission: permission });
+    return permission === 'granted';
+  }, [updateState]);
+
+  const sendNativeNotification = useCallback((title: string, body?: string) => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body,
+        icon: '/icon.png'
+      });
+    }
   }, []);
 
   const dismissToast = useCallback((id: string) => {
@@ -161,7 +189,8 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
           contacts: [],
           onboarded: false,
           focusTaskId: null,
-          focusProgress: 0
+          focusProgress: 0,
+          notificationPermission: typeof window !== 'undefined' ? Notification.permission : 'default'
         });
       }
       if (data.user) setUser(data.user);
@@ -389,7 +418,8 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
       state, user, updateState, updateUser, setUserRole, login, logout, awardXP,
       loading, refresh,
       refreshSurveys, resetData, syncSkillProgress,
-      toasts, notify, dismissToast
+      toasts, notify, dismissToast,
+      requestNotificationPermission, sendNativeNotification
     }}>
       {children}
     </HPContext.Provider>

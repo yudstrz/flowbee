@@ -42,7 +42,16 @@ const calculateLevelProgress = (points: number) => {
 };
 
 export default function HomeScreen({ openModal }: any) {
-  const { state: rawState, updateState, updateUser, user: rawUser, syncSkillProgress, awardXP } = useHP();
+  const { 
+    state: rawState, 
+    updateState, 
+    updateUser, 
+    user: rawUser, 
+    syncSkillProgress, 
+    awardXP,
+    sendNativeNotification,
+    requestNotificationPermission
+  } = useHP();
   const [greeting, setGreeting] = useState('');
   const [confetti, setConfetti] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
@@ -78,11 +87,18 @@ export default function HomeScreen({ openModal }: any) {
 
       // Check break reminder (15 mins before)
       if (currentMins >= breakStart - 15 && currentMins < breakStart) {
+        if (!reminder || reminder.type !== 'break') {
+          sendNativeNotification('Waktunya Istirahat! 🥪', `${breakStart - currentMins} menit lagi istirahat. Yuk, siap-siap rehat sejenak!`);
+        }
         setReminder({ type: 'break', mins: breakStart - currentMins });
       } else if (currentMins >= workEnd - 15 && currentMins < workEnd) {
+        if (!reminder || reminder.type !== 'clockout') {
+          sendNativeNotification('Bentar lagi Pulang! 🌙', `${workEnd - currentMins} menit lagi jam kerja selesai. Yuk, persiapkan refleksi!`);
+        }
         setReminder({ type: 'clockout', mins: workEnd - currentMins });
       } else if (currentMins >= midDayTime && currentMins < midDayTime + 15 && !midDayCheckInShown) {
         // Trigger Mid-day Check-in at the scheduled time
+        sendNativeNotification('Cek Realisasi Siang 🐝', 'Waktunya update progres kerjaan kamu hari ini!');
         openModal('work_checkin');
         setMidDayCheckInShown(true);
         setReminder(null);
@@ -109,6 +125,7 @@ export default function HomeScreen({ openModal }: any) {
           text: "Hai! Aku lihat kamu belum update task selama 3 jam. Ada kendala yang bisa aku bantu? 🤔",
           type: 'warning'
         });
+        sendNativeNotification('Lebah Produktif 🐝', 'Hai! Aku lihat kamu belum update task selama 3 jam. Ada kendala?');
         return;
       }
 
@@ -123,15 +140,21 @@ export default function HomeScreen({ openModal }: any) {
 
       // 3. Positive Reinforcement
       const cheerMessages = [
-        "Progress OKR kamu keren hari ini! Pertahankan ritmenya. ✨",
-        "Kecil tapi rutin itu lebih baik. Terus melangkah ya! 🌱",
-        "Kamu luar biasa! Sudah 12 hari streak check-in tanpa putus. 🔥",
-        "Jangan lupa bernapas dalam-dalam. Kamu memegang kendali hari ini. 🧘‍♂️"
+        { text: "Progress OKR kamu keren hari ini! Pertahankan ritmenya. ✨", title: "Kerja Bagus! 🚀" },
+        { text: "Kecil tapi rutin itu lebih baik. Terus melangkah ya! 🌱", title: "Keep it up! 🌱" },
+        { text: "Kamu luar biasa! Sudah 12 hari streak check-in tanpa putus. 🔥", title: "Streak 12 Hari! 🔥" },
+        { text: "Jangan lupa bernapas dalam-dalam. Kamu memegang kendali hari ini. 🧘‍♂️", title: "Tarik Napas Sejenak 🧘" }
       ];
+      const selected = cheerMessages[Math.floor(Math.random() * cheerMessages.length)];
       setCoachNudge({
-        text: cheerMessages[Math.floor(Math.random() * cheerMessages.length)],
+        text: selected.text,
         type: 'cheer'
       });
+
+      // Only send native notification for mindful/streak messages occasionally to not be annoying
+      if (Math.random() > 0.7) {
+        sendNativeNotification(selected.title, selected.text);
+      }
     };
 
     generateNudge();
@@ -300,8 +323,28 @@ export default function HomeScreen({ openModal }: any) {
                className="hp-tap"
              >
                <HPGlyph name="book" size={16} color={HP_TOKENS.blue} />
-             </button>
+              </button>
           </div>
+
+          {rawState?.notificationPermission === 'default' && (
+            <div style={{ 
+              background: HP_TOKENS.blueSoft, padding: '10px 16px', borderRadius: 12, marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12
+            }}>
+              <div style={{ ...HP_TEXT.small, color: HP_TOKENS.blue, fontWeight: 700, fontSize: 11 }}>
+                Aktifkan notifikasi browser untuk pengingat istirahat & tugas! 🔔
+              </div>
+              <button 
+                onClick={requestNotificationPermission}
+                style={{ 
+                  background: HP_TOKENS.blue, color: '#fff', border: 'none', padding: '6px 12px', 
+                  borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer' 
+                }}
+              >
+                Aktifkan
+              </button>
+            </div>
+          )}
 
           <div 
             onClick={() => openModal('profile_editor')}
