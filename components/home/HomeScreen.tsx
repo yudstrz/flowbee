@@ -326,23 +326,33 @@ export default function HomeScreen({ openModal }: any) {
               </button>
           </div>
 
-          {rawState?.notificationPermission === 'default' && (
+          {rawState?.notificationPermission !== 'granted' && (
             <div style={{ 
-              background: HP_TOKENS.blueSoft, padding: '10px 16px', borderRadius: 12, marginBottom: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12
+              background: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coralWash : HP_TOKENS.blueSoft, 
+              padding: '12px 16px', borderRadius: 16, marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              border: `1px solid ${rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue}30`
             }}>
-              <div style={{ ...HP_TEXT.small, color: HP_TOKENS.blue, fontWeight: 700, fontSize: 11 }}>
-                Aktifkan notifikasi browser untuk pengingat istirahat & tugas! 🔔
+              <div style={{ ...HP_TEXT.small, color: rawState?.notificationPermission === 'denied' ? HP_TOKENS.coral : HP_TOKENS.blue, fontWeight: 700, fontSize: 11, lineHeight: 1.4 }}>
+                {rawState?.notificationPermission === 'denied' 
+                  ? "Notifikasi diblokir browser. Klik ikon gembok di URL bar untuk mengizinkan kembali. 🔓"
+                  : "Aktifkan notifikasi browser untuk pengingat istirahat & tugas! 🔔"}
               </div>
-              <button 
-                onClick={requestNotificationPermission}
-                style={{ 
-                  background: HP_TOKENS.blue, color: '#fff', border: 'none', padding: '6px 12px', 
-                  borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer' 
-                }}
-              >
-                Aktifkan
-              </button>
+              {rawState?.notificationPermission !== 'denied' && (
+                <button 
+                  onClick={async () => {
+                    const granted = await requestNotificationPermission();
+                    if (!granted) alert("Gagal mengaktifkan notifikasi. Pastikan browser tidak memblokir pop-up.");
+                  }}
+                  style={{ 
+                    background: HP_TOKENS.blue, color: '#fff', border: 'none', padding: '8px 16px', 
+                    borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0
+                  }}
+                  className="hp-tap"
+                >
+                  Aktifkan
+                </button>
+              )}
             </div>
           )}
 

@@ -190,7 +190,7 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
           onboarded: false,
           focusTaskId: null,
           focusProgress: 0,
-          notificationPermission: typeof window !== 'undefined' ? Notification.permission : 'default'
+          notificationPermission: (typeof window !== 'undefined' && 'Notification' in window) ? Notification.permission : 'denied'
         });
       }
       if (data.user) setUser(data.user);
