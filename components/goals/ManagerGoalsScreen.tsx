@@ -91,10 +91,20 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
     e.stopPropagation();
     if (!confirm("Hapus KPI ini?")) return;
 
+    // 1. Update local state
     updateState((s: any) => ({
       ...s,
       goals: s.goals.filter((g: any) => String(g.id) !== String(goalId))
     }));
+
+    // 2. Persist deletion
+    try {
+      await fetch('/api/goals/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goalId })
+      });
+    } catch (e) { console.error('Failed to delete goal:', e); }
   };
 
   const handleEditProgress = async (goalId: string, newProgress: number) => {
@@ -426,12 +436,19 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       {g.status === 'pending' && (
                         <div style={{ display: 'flex', gap: 10, marginTop: 24, borderTop: `1px dashed ${HP_TOKENS.line}`, paddingTop: 16 }}>
                            <button 
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               updateState((s: any) => ({
                                 ...s,
                                 goals: s.goals.map((item: any) => item.id === g.id ? { ...item, status: 'approved' } : item)
                               }));
+                              try {
+                                await fetch('/api/goals/update', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ goalId: g.id, updates: { status: 'approved' } })
+                                });
+                              } catch (err) { console.error(err); }
                             }}
                             className="hp-tap"
                             style={{
@@ -442,12 +459,19 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                             Approve KPI
                           </button>
                           <button 
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               updateState((s: any) => ({
                                 ...s,
                                 goals: s.goals.map((item: any) => item.id === g.id ? { ...item, status: 'rejected' } : item)
                               }));
+                              try {
+                                await fetch('/api/goals/update', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ goalId: g.id, updates: { status: 'rejected' } })
+                                });
+                              } catch (err) { console.error(err); }
                             }}
                             className="hp-tap"
                             style={{

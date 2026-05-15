@@ -160,8 +160,15 @@ export default function MemberLogbookModal({ onClose, memberId, memberName, goal
                             {child.progress >= 100 && (
                               <div style={{ padding: '2px 7px', borderRadius: 5, background: HP_TOKENS.sageSoft, color: HP_TOKENS.sage, fontSize: 8, fontWeight: 900 }}>DONE</div>
                             )}
+                            <div style={{
+                              padding: '3px 9px', borderRadius: 6, fontSize: 9, fontWeight: 900,
+                              background: child.status === 'approved' ? HP_TOKENS.sageSoft : child.status === 'rejected' ? HP_TOKENS.coralSoft : HP_TOKENS.yellowSoft,
+                              color: child.status === 'approved' ? HP_TOKENS.sage : child.status === 'rejected' ? HP_TOKENS.coral : '#8A6814',
+                            }}>
+                              {(child.status || 'pending').toUpperCase()}
+                            </div>
                             <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontSize: 10 }}>
-                              {child.status === 'approved' ? '✅ Approved' : '⏳ On Progress'} · Due: {child.due}
+                               · Due: {child.due}
                             </div>
                           </div>
                           <div style={{ marginTop: 8 }}>

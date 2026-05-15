@@ -75,7 +75,7 @@ export async function GET(request: Request) {
 
     // 2. Fetch State components
     const prioritiesRes = await db.execute({
-      sql: "SELECT * FROM daily_priorities WHERE user_id = ?",
+      sql: "SELECT * FROM daily_priorities WHERE user_id = ? AND date(created_at) = date('now')",
       args: [userId]
     });
     const priorities = prioritiesRes.rows.map(r => ({
@@ -364,17 +364,21 @@ export async function POST(request: Request) {
       }
     }
 
-    // Sync Daily Priorities
+    // Sync Daily Priorities — ensure DELETE and INSERT use exactly the same date filter
     if (state.priorities) {
-      await db.execute({ 
-        sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at, 'localtime') = date('now', 'localtime')", 
-        args: [userId] 
-      });
-      for (const p of state.priorities) {
-        await db.execute({
-          sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-          args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
+      try {
+        await db.execute({ 
+          sql: "DELETE FROM daily_priorities WHERE user_id = ? AND date(created_at) = date('now')", 
+          args: [userId] 
         });
+        for (const p of state.priorities) {
+          await db.execute({
+            sql: `INSERT INTO daily_priorities (user_id, title, goal_title, goal_id, energy_level, est_time, is_done, is_verified, tone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+            args: [userId, p.title, p.goal, p.goal_id || null, p.energy, p.est, p.done ? 1 : 0, p.verified ? 1 : 0, p.tone]
+          });
+        }
+      } catch (e) {
+        console.error("Task sync error:", e);
       }
     }
 
@@ -398,18 +402,22 @@ export async function POST(request: Request) {
         .map((g: any) => String(g.id));
 
       try {
-        if (ownedGoalIds.length > 0) {
-          const placeholders = ownedGoalIds.map(() => '?').join(',');
-          await db.execute({
-            sql: `DELETE FROM goals WHERE (owner_id = ? OR assigned_by_id = ?) AND id NOT IN (${placeholders})`,
-            args: [userId, userId, ...ownedGoalIds]
-          });
-        } else {
-          await db.execute({
-            sql: `DELETE FROM goals WHERE (owner_id = ? OR assigned_by_id = ?)`,
-            args: [userId, userId]
-          });
-        }
+        // A manager can delete goals they own, assigned, OR goals owned by their team members
+        const deleteSql = `
+          DELETE FROM goals 
+          WHERE (
+            owner_id = ? 
+            OR assigned_by_id = ? 
+            OR owner_id IN (SELECT id FROM users WHERE manager_id = ?)
+          ) 
+          AND id NOT IN (${ownedGoalIds.length > 0 ? ownedGoalIds.map(() => '?').join(',') : "''"})
+        `;
+        const deleteArgs = [userId, userId, userId, ...ownedGoalIds];
+
+        await db.execute({
+          sql: deleteSql,
+          args: deleteArgs
+        });
       } catch (e) {
         console.error("Goal deletion sync error:", e);
       }
