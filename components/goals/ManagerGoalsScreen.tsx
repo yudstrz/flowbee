@@ -29,8 +29,11 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
 
   if (!state || !user) return null;
 
-  // Filter for goals relevant to the manager
-  const assignedGoals = state.goals.filter((g: any) => g.scope === 'assigned' && String(g.assignedById) === String(user.id));
+  // Filter for goals relevant to the manager: goals assigned by manager OR goals owned by team members
+  const assignedGoals = state.goals.filter((g: any) => 
+    (g.scope === 'assigned' && String(g.assignedById) === String(user.id)) || 
+    (String(g.ownerId) !== String(user.id) && g.scope !== 'company')
+  );
   const teamTasks = state.managerData?.teamTasks || [];
   const personalTasks = state.priorities || [];
 

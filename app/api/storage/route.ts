@@ -86,8 +86,11 @@ export async function GET(request: Request) {
       sql: `SELECT g.*, u.name as owner_name 
             FROM goals g 
             LEFT JOIN users u ON g.owner_id = u.id 
-            WHERE g.owner_id = ? OR g.assigned_by_id = ? OR g.scope IN ('company', 'team')`,
-      args: [userId, userId]
+            WHERE g.owner_id = ? 
+               OR g.assigned_by_id = ? 
+               OR g.scope IN ('company', 'team')
+               OR g.owner_id IN (SELECT id FROM users WHERE manager_id = ?)`,
+      args: [userId, userId, userId]
     });
 
     const goals = await Promise.all(goalsRes.rows.map(async (r) => {
