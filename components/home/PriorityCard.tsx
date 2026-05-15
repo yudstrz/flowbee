@@ -151,9 +151,16 @@ export default function PriorityCard({ p, onToggle }: PriorityCardProps) {
              </span>
           </div>
           
-          {state?.focusTaskId === p.id && (
-            <div style={{ width: '100%', height: 4, background: HP_TOKENS.lineSoft, borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
-              <div style={{ width: `${state?.focusProgress || 0}%`, height: '100%', background: HP_TOKENS.yellow, borderRadius: 2 }} />
+          {/* Progress Bar for all tasks that have progress or are focused */}
+          {(p.progress > 0 || state?.focusTaskId === p.id) && (
+            <div style={{ width: '100%', height: 4, background: HP_TOKENS.lineSoft, borderRadius: 2, marginTop: 10, overflow: 'hidden' }}>
+              <div style={{ 
+                width: `${state?.focusTaskId === p.id ? (state?.focusProgress || 0) : (p.progress || 0)}%`, 
+                height: '100%', 
+                background: state?.focusTaskId === p.id ? HP_TOKENS.yellow : HP_TOKENS.sage, 
+                borderRadius: 2,
+                transition: '0.3s ease'
+              }} />
             </div>
           )}
         </div>

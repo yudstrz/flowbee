@@ -64,7 +64,38 @@ Jawab dengan tone yang asik dan menyemangati.`,
   };
 
   const updateFocusProgress = (val: number) => {
-    updateState({ focusProgress: val });
+    updateState((s: any) => {
+      const newPriorities = s.priorities.map((p: any) => p.id === s.focusTaskId ? { ...p, progress: val } : p);
+      const updatedTask = newPriorities.find((p: any) => p.id === s.focusTaskId);
+      
+      let newGoals = s.goals;
+      if (updatedTask?.goal_id && s.goals) {
+        newGoals = s.goals.map((g: any) => {
+          if (String(g.id) === String(updatedTask.goal_id)) {
+            const tasksForGoal = newPriorities.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id));
+            const totalProgress = tasksForGoal.reduce((sum: number, task: any) => 
+              sum + (task.done ? 100 : (task.progress || 0)), 0
+            );
+            const doneCount = tasksForGoal.filter((p: any) => p.done).length;
+            const newProgress = Math.round(totalProgress / tasksForGoal.length);
+            
+            return { 
+              ...g, 
+              progress: newProgress, 
+              metric: `${doneCount}/${tasksForGoal.length} task selesai (${newProgress}%)` 
+            };
+          }
+          return g;
+        });
+      }
+
+      return {
+        ...s,
+        focusProgress: val,
+        priorities: newPriorities,
+        goals: newGoals
+      };
+    });
   };
 
   const saveRealisasi = () => {
@@ -89,67 +120,102 @@ Jawab dengan tone yang asik dan menyemangati.`,
   };
 
   return (
-    <Modal onClose={onClose} title="Cek Target Kerja 🚀">
-      <div style={{ marginBottom: 24, padding: 16, background: HP_TOKENS.paper, borderRadius: 20, border: `1px solid ${HP_TOKENS.line}` }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ ...HP_TEXT.h, fontSize: 16 }}>Progress Hari Ini</div>
-          <div style={{ ...HP_TEXT.h, fontSize: 20, color: HP_TOKENS.sage }}>{Math.round(progress)}%</div>
+    <Modal onClose={onClose} title="Mid-Day Check-In 🍯">
+      <div style={{ marginBottom: 24, padding: '24px 20px', background: `linear-gradient(135deg, ${HP_TOKENS.sageWash} 0%, #fff 100%)`, borderRadius: 24, border: `1px solid ${HP_TOKENS.sage}30`, boxShadow: '0 8px 32px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.sage, fontWeight: 900, letterSpacing: 1, marginBottom: 4 }}>OVERALL PROGRESS</div>
+            <div style={{ ...HP_TEXT.h, fontSize: 24 }}>{Math.round(progress)}% <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600 }}>Tercapai</span></div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ ...HP_TEXT.h, fontSize: 18, color: HP_TOKENS.sage }}>{doneCount}/{totalCount}</div>
+            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Target Selesai</div>
+          </div>
         </div>
-        <div style={{ height: 10, background: HP_TOKENS.lineSoft, borderRadius: 5, overflow: 'hidden' }}>
+        <div style={{ height: 12, background: HP_TOKENS.lineSoft, borderRadius: 6, overflow: 'hidden', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
           <div style={{ 
             width: `${progress}%`, height: '100%', 
             background: `linear-gradient(to right, ${HP_TOKENS.sage}, #4ADE80)`,
-            transition: '1s cubic-bezier(0.2, 0.8, 0.2, 1)' 
+            transition: '1.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            boxShadow: `0 0 12px ${HP_TOKENS.sage}40`
           }} />
-        </div>
-        <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 10, textAlign: 'center', fontWeight: 700 }}>
-          {doneCount} / {totalCount} TARGET TEREALISASI
         </div>
       </div>
 
-      {state.focusTaskId && (
-        <HPCard padding={20} style={{ marginBottom: 24, background: HP_TOKENS.yellowWash, border: `1.5px solid ${HP_TOKENS.yellow}` }}>
-          <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.ink, fontWeight: 900, marginBottom: 12 }}>FOCUS REALISASI</div>
-          <div style={{ ...HP_TEXT.h, fontSize: 15, marginBottom: 16 }}>{priorities.find((p: any) => p.id === state.focusTaskId)?.title}</div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ ...HP_TEXT.small, fontWeight: 700 }}>Progress: {state.focusProgress}%</div>
-            {state.focusProgress !== undefined && state.focusProgress < 100 && (
-              <button onClick={() => setShowNotes(true)} style={{ background: 'none', border: 'none', color: HP_TOKENS.blue, fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>
-                + Catat Kendala
-              </button>
-            )}
-          </div>
-          <input 
-            type="range" min="0" max="100" 
-            value={state.focusProgress || 0} 
-            onChange={(e) => updateFocusProgress(parseInt(e.target.value))}
-            style={{ width: '100%', accentColor: HP_TOKENS.yellow }}
-          />
-
-          {showNotes && (
-            <div style={{ marginTop: 16 }}>
-              <textarea 
-                placeholder="Kenapa baru segini persen? Apa kendalanya? (misal: nunggu approval, meeting mendadak)"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                style={{
-                  width: '100%', padding: '12px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
-                  fontFamily: HP_FONT, fontSize: 13, minHeight: 80, boxSizing: 'border-box'
-                }}
-              />
-              <button 
-                onClick={saveRealisasi}
-                style={{ 
-                  marginTop: 10, width: '100%', padding: '10px', borderRadius: 10,
-                  background: HP_TOKENS.ink, color: HP_TOKENS.yellow, border: 'none',
-                  fontFamily: HP_FONT, fontWeight: 800, fontSize: 12, cursor: 'pointer'
-                }}
-              >
-                Simpan Realisasi
-              </button>
+      {state.focusTaskId ? (
+        <HPCard padding={20} style={{ 
+          marginBottom: 24, 
+          background: `linear-gradient(135deg, ${HP_TOKENS.yellowWash} 0%, #fff 100%)`, 
+          border: `1.5px solid ${HP_TOKENS.yellow}`,
+          boxShadow: '0 8px 24px rgba(253,185,19,0.1)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: HP_TOKENS.yellow, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <HPGlyph name="sparkle" size={18} color={HP_TOKENS.ink} />
             </div>
-          )}
+            <div style={{ flex: 1 }}>
+              <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.ink, fontWeight: 900, letterSpacing: 0.5 }}>TARGET FOKUS SAAT INI</div>
+              <div style={{ ...HP_TEXT.h, fontSize: 16, color: HP_TOKENS.ink }}>{priorities.find((p: any) => p.id === state.focusTaskId)?.title}</div>
+            </div>
+          </div>
+          
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, alignItems: 'center' }}>
+              <div style={{ ...HP_TEXT.small, fontWeight: 800, color: HP_TOKENS.ink }}>Realisasi: <span style={{ color: HP_TOKENS.yellow, fontSize: 18 }}>{state.focusProgress || 0}%</span></div>
+              <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Geser untuk update</div>
+            </div>
+            <input 
+              type="range" min="0" max="100" 
+              value={state.focusProgress || 0} 
+              onChange={(e) => updateFocusProgress(parseInt(e.target.value))}
+              style={{ 
+                width: '100%', 
+                height: 8,
+                borderRadius: 4,
+                accentColor: HP_TOKENS.yellow,
+                cursor: 'pointer'
+              }}
+            />
+          </div>
+
+          <div style={{ background: 'rgba(255,255,255,0.8)', padding: 16, borderRadius: 16, border: `1px solid ${HP_TOKENS.line}` }}>
+            <div style={{ ...HP_TEXT.small, fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <HPGlyph name="book" size={14} color={HP_TOKENS.ink} />
+              Catatan Progres (Realisasi)
+            </div>
+            <textarea 
+              placeholder="Ceritakan progresmu... Kenapa baru segini? Apa yang sudah selesai? Ada kendala apa? (misal: Nunggu feedback tim, butuh riset lebih dalam)"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              style={{
+                width: '100%', padding: '12px', borderRadius: 12, border: `1px solid ${HP_TOKENS.lineSoft}`,
+                fontFamily: HP_FONT, fontSize: 13, minHeight: 100, boxSizing: 'border-box',
+                background: '#fff', outline: 'none', transition: '0.2s',
+                lineHeight: 1.5
+              }}
+            />
+            <button 
+              onClick={saveRealisasi}
+              disabled={!notes.trim()}
+              className="hp-tap"
+              style={{ 
+                marginTop: 12, width: '100%', padding: '14px', borderRadius: 12,
+                background: notes.trim() ? HP_TOKENS.ink : HP_TOKENS.line, 
+                color: notes.trim() ? HP_TOKENS.yellow : HP_TOKENS.inkFade, 
+                border: 'none',
+                fontFamily: HP_FONT, fontWeight: 800, fontSize: 13, cursor: notes.trim() ? 'pointer' : 'default',
+                boxShadow: notes.trim() ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+              }}
+            >
+              Simpan ke Logbook Activity
+            </button>
+          </div>
+        </HPCard>
+      ) : (
+        <HPCard padding={20} style={{ marginBottom: 24, textAlign: 'center', background: HP_TOKENS.paper, border: `1.5px dashed ${HP_TOKENS.line}` }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🎯</div>
+          <div style={{ ...HP_TEXT.h, fontSize: 15, color: HP_TOKENS.ink }}>Belum ada Task yang di-Set sebagai Fokus.</div>
+          <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, marginTop: 4 }}>Klik ikon ✨ pada daftar target di bawah untuk mulai fokus.</div>
         </HPCard>
       )}
 

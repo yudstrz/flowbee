@@ -169,16 +169,24 @@ export default function HomeScreen({ openModal }: any) {
       
       const update: any = { priorities: newPriorities };
 
-      // Recalculate goal progress based on updated tasks
+      // Recalculate goal progress based on updated tasks (including partial progress)
       if (priority.goal_id && s.goals) {
         const updatedGoals = s.goals.map((g: any) => {
           if (String(g.id) === String(priority.goal_id)) {
             const tasksForGoal = newPriorities.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id));
+            const totalProgress = tasksForGoal.reduce((sum: number, task: any) => 
+              sum + (task.done ? 100 : (task.progress || 0)), 0
+            );
             const doneCount = tasksForGoal.filter((p: any) => p.done).length;
             const newProgress = tasksForGoal.length > 0 
-              ? Math.round((doneCount / tasksForGoal.length) * 100) 
+              ? Math.round(totalProgress / tasksForGoal.length) 
               : g.progress;
-            return { ...g, progress: newProgress, metric: `${doneCount}/${tasksForGoal.length} task selesai` };
+            
+            return { 
+              ...g, 
+              progress: newProgress, 
+              metric: `${doneCount}/${tasksForGoal.length} task selesai (${newProgress}%)` 
+            };
           }
           return g;
         });
@@ -598,57 +606,103 @@ export default function HomeScreen({ openModal }: any) {
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 16 }}>
                 <div>
-                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.sage, fontWeight: 900, letterSpacing: 1, marginBottom: 4 }}>REALISASI TARGET</div>
-                  <div style={{ ...HP_TEXT.h, fontSize: 24 }}>{total > 0 ? Math.round((done / total) * 100) : 0}% <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600 }}>Selesai</span></div>
+                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.sage, fontWeight: 900, letterSpacing: 1, marginBottom: 4 }}>REALISASI TARGET HARI INI</div>
+                  <div style={{ ...HP_TEXT.h, fontSize: 28, color: HP_TOKENS.ink }}>
+                    {total > 0 ? Math.round((done / total) * 100) : 0}% 
+                    <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600, marginLeft: 8 }}>Tercapai</span>
+                  </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ ...HP_TEXT.h, fontSize: 16, color: HP_TOKENS.sage }}>{done}/{total}</div>
-                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Quests Done</div>
+                  <div style={{ ...HP_TEXT.h, fontSize: 18, color: HP_TOKENS.sage }}>{done}/{total}</div>
+                  <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 700 }}>Task Selesai</div>
                 </div>
               </div>
               
-              <div style={{ position: 'relative', height: 10, background: HP_TOKENS.lineSoft, borderRadius: 5, overflow: 'hidden' }}>
+              <div style={{ position: 'relative', height: 12, background: HP_TOKENS.lineSoft, borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ 
-                  width: `${total > 0 ? (done / total) * 100 : 0}%`, 
-                  height: '100%', 
-                  background: `linear-gradient(to right, ${HP_TOKENS.sage}, #4ADE80)`, 
-                  borderRadius: 5,
-                  transition: '1s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                  boxShadow: `0 0 12px ${HP_TOKENS.sage}40`
+                   width: `${total > 0 ? (done / total) * 100 : 0}%`, 
+                   height: '100%', 
+                   background: `linear-gradient(to right, ${HP_TOKENS.sage}, #4ADE80)`, 
+                   borderRadius: 6,
+                   transition: '1s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                   boxShadow: `0 0 12px ${HP_TOKENS.sage}40`
                 }} />
               </div>
+
+              {/* Focus Task Sync Display */}
+              {state.focusTaskId && (
+                <div style={{ 
+                  marginTop: 16, padding: '12px 16px', borderRadius: 12, 
+                  background: 'rgba(255,255,255,0.6)', border: `1px dashed ${HP_TOKENS.yellow}`,
+                  display: 'flex', alignItems: 'center', gap: 12
+                }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: HP_TOKENS.yellowSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <HPGlyph name="sparkle" size={16} color={HP_TOKENS.yellow} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontWeight: 800 }}>SEDANG FOKUS:</div>
+                    <div style={{ ...HP_TEXT.body, fontSize: 13, fontWeight: 700, color: HP_TOKENS.ink }}>
+                      {priorities.find((p: any) => p.id === state.focusTaskId)?.title || "Focus Task"}
+                    </div>
+                  </div>
+                  <div style={{ ...HP_TEXT.h, fontSize: 14, color: HP_TOKENS.yellow }}>{state.focusProgress || 0}%</div>
+                </div>
+              )}
 
               <button 
                 onClick={() => openModal('work_checkin')}
                 className="hp-tap"
                 style={{ 
-                  marginTop: 20, width: '100%', padding: '12px', borderRadius: 14,
+                  marginTop: 20, width: '100%', padding: '14px', borderRadius: 16,
                   background: HP_TOKENS.ink, border: 'none', color: '#fff',
-                  fontFamily: HP_FONT, fontWeight: 800, fontSize: 13, cursor: 'pointer',
+                  fontFamily: HP_FONT, fontWeight: 800, fontSize: 14, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
                 }}
               >
-                <HPGlyph name="sparkle" size={16} color={HP_TOKENS.yellow} />
-                Cek Realisasi & Tips Fokus
+                <HPGlyph name="sparkle" size={18} color={HP_TOKENS.yellow} />
+                Cek Realisasi & Update Progress
               </button>
             </div>
           </HPCard>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {priorities.map((p: any) => (
-              <PriorityCard key={p.id} p={p} onToggle={() => togglePriority(p.id)}/>
-            ))}
-            <button onClick={() => openModal('focus')} className="hp-tap" style={{
-              padding: '16px', borderRadius: 16, border: 'none',
-              background: HP_TOKENS.ink,
-              color: HP_TOKENS.yellow, cursor: 'pointer', fontFamily: HP_FONT, fontWeight: 800, fontSize: 15,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-              marginTop: 4,
-            }}>
-              <HPGlyph name="sparkle" size={20} color={HP_TOKENS.yellow}/>
-              <span>Start Focus Session</span>
-            </button>
+            {priorities.length > 0 ? (
+              priorities.map((p: any) => (
+                <PriorityCard key={p.id} p={p} onToggle={() => togglePriority(p.id)}/>
+              ))
+            ) : (
+              <div style={{ 
+                padding: '40px 20px', textAlign: 'center', 
+                background: HP_TOKENS.card, borderRadius: 24, border: `1.5px dashed ${HP_TOKENS.line}`
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>📝</div>
+                <div style={{ ...HP_TEXT.h, fontSize: 14, color: HP_TOKENS.inkMute }}>Belum ada target untuk hari ini.</div>
+                <button 
+                  onClick={() => openModal('manage_priorities')}
+                  style={{ 
+                    marginTop: 12, background: 'none', border: 'none', 
+                    color: HP_TOKENS.blue, fontWeight: 800, fontSize: 13, cursor: 'pointer' 
+                  }}
+                >
+                  + Tambah Target
+                </button>
+              </div>
+            )}
+            
+            {priorities.length > 0 && (
+              <button onClick={() => openModal('focus')} className="hp-tap" style={{
+                padding: '18px', borderRadius: 20, border: 'none',
+                background: HP_TOKENS.sage,
+                color: '#fff', cursor: 'pointer', fontFamily: HP_FONT, fontWeight: 800, fontSize: 15,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+                marginTop: 8,
+                boxShadow: `0 8px 24px ${HP_TOKENS.sage}30`
+              }}>
+                <HPGlyph name="sparkle" size={20} color={HP_TOKENS.yellow}/>
+                <span>Mulai Sesi Fokus Deep Work</span>
+              </button>
+            )}
           </div>
         </div>
 

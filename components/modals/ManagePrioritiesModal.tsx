@@ -44,11 +44,19 @@ export default function ManagePrioritiesModal({ onClose, initialGoal }: { onClos
         updatedGoals = s.goals.map((g: any) => {
           if (String(g.id) === String(newP.goal_id)) {
             const tasksForGoal = newPriorities.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id));
+            const totalProgress = tasksForGoal.reduce((sum: number, task: any) => 
+              sum + (task.done ? 100 : (task.progress || 0)), 0
+            );
             const doneCount = tasksForGoal.filter((p: any) => p.done).length;
             const newProgress = tasksForGoal.length > 0 
-              ? Math.round((doneCount / tasksForGoal.length) * 100) 
+              ? Math.round(totalProgress / tasksForGoal.length) 
               : g.progress;
-            return { ...g, progress: newProgress, metric: `${doneCount}/${tasksForGoal.length} task selesai` };
+            
+            return { 
+              ...g, 
+              progress: newProgress, 
+              metric: `${doneCount}/${tasksForGoal.length} task selesai (${newProgress}%)` 
+            };
           }
           return g;
         });
@@ -75,14 +83,18 @@ export default function ManagePrioritiesModal({ onClose, initialGoal }: { onClos
         updatedGoals = s.goals.map((g: any) => {
           if (String(g.id) === String(deletedTask.goal_id)) {
             const tasksForGoal = newPriorities.filter((p: any) => p.goal_id && String(p.goal_id) === String(g.id));
+            const totalProgress = tasksForGoal.reduce((sum: number, task: any) => 
+              sum + (task.done ? 100 : (task.progress || 0)), 0
+            );
             const doneCount = tasksForGoal.filter((p: any) => p.done).length;
             const newProgress = tasksForGoal.length > 0 
-              ? Math.round((doneCount / tasksForGoal.length) * 100) 
+              ? Math.round(totalProgress / tasksForGoal.length) 
               : g.progress;
+            
             return { 
               ...g, 
               progress: newProgress, 
-              metric: tasksForGoal.length > 0 ? `${doneCount}/${tasksForGoal.length} task selesai` : 'Realisasi' 
+              metric: tasksForGoal.length > 0 ? `${doneCount}/${tasksForGoal.length} task selesai (${newProgress}%)` : 'Realisasi' 
             };
           }
           return g;
