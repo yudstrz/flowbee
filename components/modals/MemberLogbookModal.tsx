@@ -15,9 +15,10 @@ interface MemberLogbookModalProps {
   memberName: string;
   goalId?: string;
   goalTitle?: string;
+  childGoals?: any[];
 }
 
-export default function MemberLogbookModal({ onClose, memberId, memberName, goalId, goalTitle }: MemberLogbookModalProps) {
+export default function MemberLogbookModal({ onClose, memberId, memberName, goalId, goalTitle, childGoals = [] }: MemberLogbookModalProps) {
   const { state, updateState, user } = useHP();
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<any[]>([]);
@@ -125,6 +126,59 @@ export default function MemberLogbookModal({ onClose, memberId, memberName, goal
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Aligned Child Goals Section */}
+            {childGoals.length > 0 && (
+              <div>
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
+                }}>
+                  <HPGlyph name="link" size={14} color={HP_TOKENS.blue} />
+                  <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.blue, fontSize: 10, letterSpacing: '0.05em' }}>
+                    ALIGNED OKR ({childGoals.length})
+                  </div>
+                  <div style={{ height: 1.5, flex: 1, background: HP_TOKENS.lineSoft, opacity: 0.5 }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {childGoals.map((child: any) => (
+                    <HPCard key={child.id} padding={16} style={{
+                      border: `1.5px solid ${HP_TOKENS.blue}20`,
+                      background: `${HP_TOKENS.blue}06`,
+                      borderRadius: 20,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 14,
+                          background: child.progress >= 100 ? HP_TOKENS.sage : HP_TOKENS.blue,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          boxShadow: `0 4px 12px ${child.progress >= 100 ? HP_TOKENS.sage : HP_TOKENS.blue}30`
+                        }}>
+                          <HPGlyph name="target" size={20} color="#fff" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ ...HP_TEXT.h, fontSize: 14, color: HP_TOKENS.ink }}>{child.title}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            {child.progress >= 100 && (
+                              <div style={{ padding: '2px 7px', borderRadius: 5, background: HP_TOKENS.sageSoft, color: HP_TOKENS.sage, fontSize: 8, fontWeight: 900 }}>DONE</div>
+                            )}
+                            <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, fontSize: 10 }}>
+                              {child.status === 'approved' ? '✅ Approved' : '⏳ On Progress'} · Due: {child.due}
+                            </div>
+                          </div>
+                          <div style={{ marginTop: 8 }}>
+                            <HPBar value={child.progress || 0} tone={child.tone || 'blue'} height={5} />
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ ...HP_TEXT.h, fontSize: 18, color: child.progress >= 100 ? HP_TOKENS.sage : HP_TOKENS.blue }}>{child.progress || 0}%</div>
+                        </div>
+                      </div>
+                    </HPCard>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Daily Tasks grouped by date */}
             {logs.map((day, idx) => (
               <div key={day.date}>
                 <div style={{ 

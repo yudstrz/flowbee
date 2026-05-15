@@ -37,6 +37,12 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
   const teamTasks = state.managerData?.teamTasks || [];
   const personalTasks = state.priorities || [];
 
+  // Only show top-level goals — hide children whose parent is already in the list
+  const topLevelGoals = assignedGoals.filter((g: any) => {
+    if (!g.parent_id) return true;
+    return !assignedGoals.some((p: any) => String(p.id) === String(g.parent_id));
+  });
+
   const handleVerifyTask = async (taskId: string, goalId: string) => {
     try {
       // 1. Call API
@@ -122,18 +128,25 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
           <SectionHeader 
             icon="people" 
             label="Assigned to Members (KPIs)" 
-            count={String(assignedGoals.length)} 
+            count={String(topLevelGoals.length)} 
             action="+ Buat KPI"
             onAction={() => openModal('new_goal', { scope: 'employee' })}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {assignedGoals.map(g => {
-              const tasksForGoal = teamTasks.filter((t: any) => t.goalId && String(t.goalId) === String(g.id)) || [];
+            {topLevelGoals.map(g => {
+              // Find child/aligned goals
+              const childGoals = assignedGoals.filter((c: any) => String(c.parent_id) === String(g.id));
+              const childIds = childGoals.map((c: any) => String(c.id));
+
+              // Collect tasks for this goal AND all its children
+              const allRelatedTasks = teamTasks.filter((t: any) =>
+                t.goalId && (String(t.goalId) === String(g.id) || childIds.includes(String(t.goalId)))
+              );
               const ownerName = g.owner || state.managerData?.members?.find((m: any) => String(m.id) === String(g.ownerId))?.name || 'Team Member';
               
-              const pendingVerification = tasksForGoal.filter((t: any) => t.done && !t.verified);
-              const verifiedTasks = tasksForGoal.filter((t: any) => t.verified);
-              const activeTasks = tasksForGoal.filter((t: any) => !t.done);
+              const pendingVerification = allRelatedTasks.filter((t: any) => t.done && !t.verified);
+              const verifiedTasks = allRelatedTasks.filter((t: any) => t.verified);
+              const activeTasks = allRelatedTasks.filter((t: any) => !t.done);
 
               return (
                 <div 
@@ -144,7 +157,8 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                     memberId: g.ownerId, 
                     memberName: ownerName,
                     goalId: g.id,
-                    goalTitle: g.title
+                    goalTitle: g.title,
+                    childGoals: childGoals
                   })}
                 >
                   <div style={{ 
@@ -189,10 +203,64 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                       memberId: g.ownerId, 
                       memberName: ownerName,
                       goalId: g.id,
-                      goalTitle: g.title
+                      goalTitle: g.title,
+                      childGoals: childGoals
                     })} className="hp-tap">
-                      <GoalCard g={g} isReadOnly={true} tasks={tasksForGoal} />
+                      <GoalCard g={g} isReadOnly={true} tasks={allRelatedTasks} />
                     </div>
+
+                    {/* ── Aligned Child Goals (embedded inside parent) ── */}
+                    {childGoals.length > 0 && (
+                      <div style={{ padding: '12px 16px', background: `${HP_TOKENS.blue}08`, borderTop: `1px solid ${HP_TOKENS.lineSoft}` }}>
+                        <div style={{ ...HP_TEXT.tiny, fontWeight: 900, color: HP_TOKENS.blue, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <HPGlyph name="link" size={12} color={HP_TOKENS.blue} />
+                          ALIGNED OKR ({childGoals.length})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {childGoals.map((child: any) => {
+                            const childTasks = teamTasks.filter((t: any) => t.goalId && String(t.goalId) === String(child.id));
+                            return (
+                              <div key={child.id} style={{
+                                padding: '14px 16px', background: '#fff', borderRadius: 16,
+                                border: `1.5px solid ${HP_TOKENS.lineSoft}`,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                      <div style={{
+                                        width: 22, height: 22, borderRadius: 7,
+                                        background: `${TONE[child.tone] || HP_TOKENS.sage}15`,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                      }}>
+                                        <HPGlyph name="target" size={12} color={TONE[child.tone] || HP_TOKENS.sage} />
+                                      </div>
+                                      <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{child.title}</div>
+                                      {(child.progress || 0) >= 100 && (
+                                        <div style={{
+                                          padding: '2px 7px', borderRadius: 5,
+                                          background: HP_TOKENS.sageSoft, color: HP_TOKENS.sage,
+                                          fontSize: 8, fontWeight: 900
+                                        }}>DONE</div>
+                                      )}
+                                    </div>
+                                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 4, marginLeft: 30, fontSize: 10 }}>
+                                      {child.status === 'approved' ? '✅ Approved' : child.status === 'pending' ? '⏳ On Progress' : child.status?.toUpperCase() || ''} · Due: {child.due}
+                                    </div>
+                                  </div>
+                                  <div style={{ textAlign: 'right' }}>
+                                    <div style={{ ...HP_TEXT.h, fontSize: 14, color: TONE[child.tone] || HP_TOKENS.sage }}>{child.progress || 0}%</div>
+                                  </div>
+                                </div>
+                                <div style={{ marginTop: 10 }}>
+                                  <HPBar value={child.progress || 0} tone={child.tone} height={5} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     <div style={{ padding: '16px', background: HP_TOKENS.paper, borderTop: `1px solid ${HP_TOKENS.lineSoft}` }}>
                       {/* Section: Pending Verification */}
@@ -313,7 +381,7 @@ export default function ManagerGoalsScreen({ openModal }: Props) {
                 </div>
               );
             })}
-            {assignedGoals.length === 0 && <div style={{ textAlign: 'center', padding: 20, color: HP_TOKENS.inkMute }}>Belum ada OKR yang ditugaskan.</div>}
+            {topLevelGoals.length === 0 && <div style={{ textAlign: 'center', padding: 20, color: HP_TOKENS.inkMute }}>Belum ada OKR yang ditugaskan.</div>}
           </div>
         </>
       )}
