@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 
     // Fetch Goals with Owner Names and Sub-goals
     const goalsRes = await db.execute({
-      sql: `SELECT g.*, u.name as owner_name 
+      sql: `SELECT g.*, u.name as joined_owner_name 
             FROM goals g 
             LEFT JOIN users u ON g.owner_id = u.id 
             WHERE g.owner_id = ? 
@@ -136,7 +136,7 @@ export async function GET(request: Request) {
         tone: r.tone,
         metric: childGoalsRes.rows.length > 0 ? `${childGoalsRes.rows.length} aligned OKR` : r.metric,
         scope: r.scope,
-        owner: (r.owner_name as string) || 'Unknown',
+        owner: (r.joined_owner_name as string) || (r.owner_name as string) || 'Unknown',
         ownerId: r.owner_id,
         assignedById: r.assigned_by_id,
         parent_id: r.parent_id,
