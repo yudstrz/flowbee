@@ -178,14 +178,14 @@ export async function GET(request: Request) {
 
     // Fetch Kudos for Feed (Correlated)
     const kudosRes = await db.execute({
-      sql: `SELECT k.*, s.name as sender_name, r.name as receiver_name 
+      sql: `SELECT k.*, s.name as sender_name, s.avatar_image as sender_avatar, r.name as receiver_name 
             FROM kudos k 
             JOIN users s ON k.sender_id = s.id 
             JOIN users r ON k.receiver_id = r.id 
             ORDER BY k.created_at DESC LIMIT 10`,
     });
     const feed = kudosRes.rows.map(r => ({
-      id: r.id, from: r.sender_name, to: r.receiver_name, value: r.value_tag, msg: r.message, likes: r.likes_count, time: 'Baru saja'
+      id: r.id, from: r.sender_name, to: r.receiver_name, value: r.value_tag, msg: r.message, likes: r.likes_count, time: 'Baru saja', avatarImage: r.sender_avatar
     }));
 
     // Fetch Skills
@@ -316,10 +316,9 @@ export async function POST(request: Request) {
     // Update User
     try {
       await db.execute({
-        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ?, is_onboarded = ?, current_intention = ?, focus_task_id = ?, focus_progress = ? WHERE id = ?`,
+        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ?, is_onboarded = ?, current_intention = ?, focus_task_id = ?, focus_progress = ? WHERE id = ?`,
         args: [
           user.name, user.streak, user.points, user.coins, user.level, user.rank,
-          user.avatarImage || null,
           user.userRole || user.role || 'employee', 
           state.lastActivityDate || new Date().toISOString(),
           state.personalWellbeingGoal || "",
@@ -335,10 +334,9 @@ export async function POST(request: Request) {
       console.error("Failed to update user state:", e);
       // Fallback: Try a simpler update if new columns cause issues (e.g. migration hasn't run)
       await db.execute({
-        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, avatar_image = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ? WHERE id = ?`,
+        sql: `UPDATE users SET name = ?, streak = ?, points = ?, coins = ?, level = ?, rank = ?, user_role_context = ?, last_activity_at = ?, personal_wellbeing_goal = ?, wellbeing_routine = ? WHERE id = ?`,
         args: [
           user.name, user.streak, user.points, user.coins, user.level, user.rank,
-          user.avatarImage || null,
           user.userRole || user.role, state.lastActivityDate,
           state.personalWellbeingGoal || "",
           JSON.stringify(state.wellbeingRoutine || []),
@@ -346,6 +344,7 @@ export async function POST(request: Request) {
         ]
       });
     }
+
 
     // Sync Rewards (Only HR can manage global rewards)
     // Check role or userRole context

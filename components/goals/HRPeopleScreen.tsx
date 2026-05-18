@@ -470,7 +470,7 @@ export default function HRPeopleScreen({ openModal }: Props) {
             {filtered.map(e => (
               <HPCard key={e.id} padding={12} style={{ border: e.risk === 'high' ? `1.5px solid ${HP_TOKENS.coral}40` : undefined }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <HPAvatar name={e.name} size={40} />
+                  <HPAvatar name={e.name} size={40} image={e.avatar_image} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{e.name}</div>

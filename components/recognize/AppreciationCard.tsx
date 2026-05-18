@@ -81,7 +81,7 @@ export default function AppreciationCard({ f }: AppreciationCardProps) {
   return (
     <HPCard padding={14}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <HPAvatar name={f.from} size={36}/>
+        <HPAvatar name={f.from} size={36} image={f.avatarImage} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ ...HP_TEXT.body, fontSize: 13, fontWeight: 600, color: HP_TOKENS.inkSoft }}>
             <span style={{ color: HP_TOKENS.ink, fontWeight: 800 }}>{f.from}</span> untuk <span style={{ color: HP_TOKENS.ink, fontWeight: 800 }}>{f.to}</span>

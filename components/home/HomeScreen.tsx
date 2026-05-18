@@ -289,8 +289,36 @@ export default function HomeScreen({ openModal }: any) {
   const { mood, energy, priorities } = state;
   const moodObj = HP_MOODS.find(m => m.key === mood);
   const energyObj = HP_ENERGY.find(e => e.key === energy);
-  const done = priorities.filter((p: any) => p.done).length;
-  const total = priorities.length;
+
+  // Sync with WorkCheckInModal calculations
+  const currentFocusProgress = state.focusTaskId 
+    ? (priorities.find((p: any) => p.id === state.focusTaskId)?.progress || 0)
+    : (state.goals?.find((g: any) => g.title === state.intention)?.progress || state.focusProgress || 0);
+
+  const hasExtraFocus = !state.focusTaskId && state.intention;
+
+  let done = 0;
+  let total = 0;
+  let overallProgressValue = 0;
+
+  if (priorities.length > 0) {
+    done = priorities.filter((p: any) => p.done).length;
+    total = priorities.length;
+    const totalTaskProgress = priorities.reduce((sum: number, p: any) => sum + (p.done ? 100 : (p.progress || 0)), 0);
+    overallProgressValue = total > 0 ? totalTaskProgress / total : 0;
+  } else {
+    const personalGoals = state.goals?.filter((g: any) => String(g.ownerId) === String(user?.id) && g.scope === 'personal') || [];
+    if (personalGoals.length > 0) {
+      done = personalGoals.filter((g: any) => (g.progress || 0) >= 100).length;
+      total = personalGoals.length;
+      const totalGoalProgress = personalGoals.reduce((sum, g) => sum + (g.progress || 0), 0);
+      overallProgressValue = total > 0 ? totalGoalProgress / total : 0;
+    } else {
+      done = hasExtraFocus && currentFocusProgress === 100 ? 1 : 0;
+      total = hasExtraFocus ? 1 : 0;
+      overallProgressValue = total > 0 ? currentFocusProgress : 0;
+    }
+  }
 
   return (
     <div style={{ position: 'relative', minHeight: '100%', paddingBottom: 120, fontFamily: HP_FONT }}>
@@ -669,7 +697,7 @@ export default function HomeScreen({ openModal }: any) {
                 <div>
                   <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.sage, fontWeight: 900, letterSpacing: 1, marginBottom: 4 }}>REALISASI TARGET HARI INI</div>
                   <div style={{ ...HP_TEXT.h, fontSize: 28, color: HP_TOKENS.ink }}>
-                    {total > 0 ? Math.round((done / total) * 100) : 0}% 
+                    {total > 0 ? Math.round(overallProgressValue) : 0}% 
                     <span style={{ fontSize: 14, color: HP_TOKENS.inkFade, fontWeight: 600, marginLeft: 8 }}>Tercapai</span>
                   </div>
                 </div>
@@ -681,7 +709,7 @@ export default function HomeScreen({ openModal }: any) {
               
               <div style={{ position: 'relative', height: 12, background: HP_TOKENS.lineSoft, borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ 
-                   width: `${total > 0 ? (done / total) * 100 : 0}%`, 
+                   width: `${total > 0 ? overallProgressValue : 0}%`, 
                    height: '100%', 
                    background: `linear-gradient(to right, ${HP_TOKENS.sage}, #4ADE80)`, 
                    borderRadius: 6,

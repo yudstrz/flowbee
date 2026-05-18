@@ -24,6 +24,7 @@ interface TeamMember {
   statusTone: string;
   glyph?: string;
   tasks: { done: number; total: number };
+  avatarImage?: string;
 }
 
 export default function ManagerHomeScreen({ openModal }: Props) {
@@ -152,7 +153,7 @@ export default function ManagerHomeScreen({ openModal }: Props) {
                   padding: '10px 0',
                   borderTop: i === 0 ? 'none' : `1px solid ${HP_TOKENS.lineSoft}`,
                 }}>
-                  <HPAvatar name={m.name} size={36} />
+                  <HPAvatar name={m.name} size={36} image={m.avatarImage} />
                   <div style={{ flex: 1 }}>
                     <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{m.name}</div>
                     <div style={{ ...HP_TEXT.small, color: HP_TOKENS.inkMute, fontSize: 11 }}>{m.role}</div>

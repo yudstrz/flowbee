@@ -56,7 +56,7 @@ export default function LeaderboardScreen() {
                   {u.rank}
                 </div>
                 
-                <HPAvatar name={u.name} size={44} />
+                <HPAvatar name={u.name} size={44} image={u.avatarImage} />
 
                 <div style={{ flex: 1 }}>
                   <div style={{ ...HP_TEXT.h, fontSize: 15 }}>{u.name}</div>

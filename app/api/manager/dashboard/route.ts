@@ -29,7 +29,8 @@ export async function GET(request: Request) {
       tasks: { done: Number(m.tasks_done), total: Number(m.tasks_total) },
       streak: m.streak || 0,
       status: Number(m.tasks_done) === Number(m.tasks_total) && Number(m.tasks_total) > 0 ? 'Excellent' : 'On track',
-      statusTone: m.mood === 'stress' ? 'coral' : 'sage'
+      statusTone: m.mood === 'stress' ? 'coral' : 'sage',
+      avatarImage: m.avatar_image
     }));
 
     // 2. Fetch Team Goals

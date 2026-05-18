@@ -361,10 +361,14 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
           delete syncState.feed;
           delete syncState.rewards; // Server handles its own rewards fetching for non-HR
           
+          // Strip massive avatarImage to keep regular state sync light
+          const syncUser = { ...data.user };
+          delete syncUser.avatarImage;
+          
           const response = await fetch("/api/storage", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ state: syncState, user: data.user, userId: data.user.id }),
+            body: JSON.stringify({ state: syncState, user: syncUser, userId: data.user.id }),
             // Removed keepalive: true for regular syncs to avoid 64KB limit
           });
           
@@ -398,7 +402,11 @@ export function HPProvider({ children }: { children: React.ReactNode }) {
           delete syncState.feed;
           delete syncState.rewards;
 
-          const payload = JSON.stringify({ state: syncState, user: data.user, userId: data.user.id });
+          // Strip massive avatarImage to keep regular state sync light
+          const syncUser = { ...data.user };
+          delete syncUser.avatarImage;
+
+          const payload = JSON.stringify({ state: syncState, user: syncUser, userId: data.user.id });
           // Only send if within beacon limits (usually 64KB)
           if (payload.length < 60000) {
             const blob = new Blob([payload], { type: 'application/json' });

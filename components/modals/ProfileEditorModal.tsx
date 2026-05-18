@@ -68,23 +68,73 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
     }
   };
 
-  const handleSave = () => {
-    updateUser({ 
-      name,
-      ...(preview !== undefined ? { avatarImage: preview ?? undefined } : {})
-    });
-    if (state?.workSchedule) {
-      updateState({ 
-        workSchedule: { ...state.workSchedule, midDayCheckInTime: midDayTime } 
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/user/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          name,
+          avatarImage: preview // either base64 or null
+        })
       });
+
+      if (!res.ok) {
+        throw new Error("Gagal menyimpan profil");
+      }
+
+      updateUser({ 
+        name,
+        avatarImage: preview ?? undefined
+      });
+
+      if (state?.workSchedule) {
+        updateState({ 
+          workSchedule: { ...state.workSchedule, midDayCheckInTime: midDayTime } 
+        });
+      }
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal menyimpan perubahan profil. Silakan coba lagi.");
+    } finally {
+      setSaving(false);
     }
-    onClose();
   };
 
-  const handleRemove = () => {
-    setPreview(null);
-    updateUser({ avatarImage: undefined });
-    onClose();
+  const handleRemove = async () => {
+    if (!user) return;
+    if (!confirm("Hapus foto profil Anda?")) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/user/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          name,
+          avatarImage: null // clear in DB
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal menghapus foto profil");
+      }
+
+      setPreview(null);
+      updateUser({ avatarImage: undefined });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      alert("Gagal menghapus foto profil.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -98,16 +148,16 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
         
         {/* Preview Area */}
         <div 
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !saving && fileInputRef.current?.click()}
           style={{
             width: 160, height: 160, borderRadius: 80,
             background: HP_TOKENS.lineSoft,
             border: `2px dashed ${HP_TOKENS.line}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', overflow: 'hidden', position: 'relative',
+            cursor: saving ? 'not-allowed' : 'pointer', overflow: 'hidden', position: 'relative',
             transition: 'all 0.2s'
           }}
-          className="hp-tap"
+          className={saving ? "" : "hp-tap"}
         >
           {preview ? (
             <img src={preview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -124,7 +174,7 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: HP_FONT, fontSize: 10, fontWeight: 800,
           }}>
-            CLICK TO CHANGE
+            {saving ? "SAVING..." : "CLICK TO CHANGE"}
           </div>
         </div>
 
@@ -134,6 +184,7 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
           onChange={handleFileChange} 
           accept="image/*" 
           style={{ display: 'none' }} 
+          disabled={saving}
         />
 
         <div style={{ width: '100%' }}>
@@ -142,6 +193,7 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ketik nama Anda"
+            disabled={saving}
             style={{
               width: '100%', padding: '12px 16px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
               fontFamily: HP_FONT, fontSize: 14, fontWeight: 600, outline: 'none', background: HP_TOKENS.card
@@ -159,6 +211,7 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
               type="time"
               value={midDayTime}
               onChange={(e) => setMidDayTime(e.target.value)}
+              disabled={saving}
               style={{
                 flex: 1, padding: '12px 16px', borderRadius: 12, border: `1px solid ${HP_TOKENS.line}`,
                 fontFamily: HP_FONT, fontSize: 16, fontWeight: 700, outline: 'none', background: HP_TOKENS.card
@@ -173,29 +226,33 @@ export default function ProfileEditorModal({ onClose }: ProfileEditorModalProps)
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <button 
             onClick={handleSave}
+            disabled={saving}
             style={{
               width: '100%', padding: '16px', borderRadius: 16,
               background: HP_TOKENS.yellow, color: HP_TOKENS.ink,
               border: 'none', fontFamily: HP_FONT, fontWeight: 800, fontSize: 15,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
+              cursor: saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              opacity: saving ? 0.7 : 1
             }}
-            className="hp-tap"
+            className={saving ? "" : "hp-tap"}
           >
             <HPGlyph name="check" size={18} color={HP_TOKENS.ink} />
-            <span>Simpan Perubahan</span>
+            <span>{saving ? "Menyimpan..." : "Simpan Perubahan"}</span>
           </button>
 
           {user?.avatarImage && (
             <button 
               onClick={handleRemove}
+              disabled={saving}
               style={{
                 width: '100%', padding: '14px', borderRadius: 16,
                 background: 'transparent', color: HP_TOKENS.coral,
                 border: `1.5px solid ${HP_TOKENS.coral}40`, 
                 fontFamily: HP_FONT, fontWeight: 700, fontSize: 14,
-                cursor: 'pointer'
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving ? 0.5 : 1
               }}
-              className="hp-tap"
+              className={saving ? "" : "hp-tap"}
             >
               Hapus Foto & Reset ke Avatar
             </button>

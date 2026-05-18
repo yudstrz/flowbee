@@ -31,15 +31,29 @@ export default function WorkCheckInModal({ onClose }: WorkCheckInModalProps) {
     : (state.goals?.find((g: any) => g.title === state.intention)?.progress || state.focusProgress || 0);
 
   const hasExtraFocus = !state.focusTaskId && state.intention;
-  
-  const doneCount = priorities.filter((p: any) => p.done).length + (hasExtraFocus && currentFocusProgress === 100 ? 1 : 0);
-  const totalCount = priorities.length + (hasExtraFocus ? 1 : 0);
-  
-  // Weighted progress calculation
-  const totalTaskProgress = priorities.reduce((sum, p) => sum + (p.done ? 100 : (p.progress || 0)), 0);
-  const overallProgressValue = totalCount > 0 
-    ? (totalTaskProgress + (hasExtraFocus ? currentFocusProgress : 0)) / totalCount 
-    : 0;
+
+  let doneCount = 0;
+  let totalCount = 0;
+  let overallProgressValue = 0;
+
+  if (priorities.length > 0) {
+    doneCount = priorities.filter((p: any) => p.done).length;
+    totalCount = priorities.length;
+    const totalTaskProgress = priorities.reduce((sum, p) => sum + (p.done ? 100 : (p.progress || 0)), 0);
+    overallProgressValue = totalCount > 0 ? totalTaskProgress / totalCount : 0;
+  } else {
+    const personalGoals = state.goals?.filter((g: any) => String(g.ownerId) === String(user?.id) && g.scope === 'personal') || [];
+    if (personalGoals.length > 0) {
+      doneCount = personalGoals.filter((g: any) => (g.progress || 0) >= 100).length;
+      totalCount = personalGoals.length;
+      const totalGoalProgress = personalGoals.reduce((sum, g) => sum + (g.progress || 0), 0);
+      overallProgressValue = totalCount > 0 ? totalGoalProgress / totalCount : 0;
+    } else {
+      doneCount = hasExtraFocus && currentFocusProgress === 100 ? 1 : 0;
+      totalCount = hasExtraFocus ? 1 : 0;
+      overallProgressValue = totalCount > 0 ? currentFocusProgress : 0;
+    }
+  }
 
   const askAI = async () => {
     setIsLoading(true);

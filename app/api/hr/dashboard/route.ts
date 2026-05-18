@@ -37,7 +37,8 @@ export async function GET() {
           dept: 'Digital Experience', // We'd join with teams in a real app
           wellbeing: mood === 'stress' ? 20 : 40,
           mood: mood || 'neutral',
-          risk: 'high'
+          risk: 'high',
+          avatarImage: u.avatar_image
         });
       }
     }
