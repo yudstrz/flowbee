@@ -87,27 +87,20 @@ export default function HRAnalyticsScreen({ openModal }: Props) {
                 <HPGlyph name="book" size={20} color={TONE_COLOR[p.tone] || HP_TOKENS.inkSoft} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ ...HP_TEXT.h, fontSize: 13 }}>{p.title}</div>
-                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 2 }}>
-                      {p.enrolled} terdaftar · {p.completed} selesai · Due {p.due}
+                    <div style={{ ...HP_TEXT.tiny, color: HP_TOKENS.inkMute, marginTop: 4 }}>
+                      Kategori: <span style={{ fontWeight: 800 }}>{p.category}</span> · Due: <span style={{ fontWeight: 800 }}>{p.due}</span>
                     </div>
                   </div>
                   <div style={{
-                    fontSize: 11, fontWeight: 900, fontFamily: HP_FONT,
-                    color: TONE_COLOR[p.tone], padding: '3px 8px',
-                    background: TONE_SOFT[p.tone], borderRadius: 8,
+                    fontSize: 10, fontWeight: 900, fontFamily: HP_FONT,
+                    color: TONE_COLOR[p.tone], padding: '4px 10px',
+                    background: TONE_SOFT[p.tone], borderRadius: 99,
                   }}>
-                    {Math.round((p.completed / p.enrolled) * 100)}%
+                    AKTIF
                   </div>
-                </div>
-                <div style={{ marginTop: 8, height: 5, background: HP_TOKENS.lineSoft, borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{
-                    width: `${(p.completed / p.enrolled) * 100}%`, height: '100%',
-                    background: TONE_COLOR[p.tone] || HP_TOKENS.sage, borderRadius: 3,
-                    transition: '1s ease',
-                  }} />
                 </div>
               </div>
             </div>

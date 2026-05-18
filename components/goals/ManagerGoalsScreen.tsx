@@ -6,7 +6,6 @@ import { HP_TOKENS, HP_FONT, HP_TEXT } from "@/lib/constants";
 import {
   MANAGER_TEAM_GOALS,
   MANAGER_TEAM_MEMBERS,
-  MANAGER_ONE_ON_ONES,
 } from "@/lib/mockData";
 import HPGlyph from "@/components/ui/HPGlyph";
 import HPCard from "@/components/ui/HPCard";

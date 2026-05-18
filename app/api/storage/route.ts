@@ -176,17 +176,6 @@ export async function GET(request: Request) {
     });
     const latestMood = moodRes.rows[0];
 
-    // Fetch Kudos for Feed (Correlated)
-    const kudosRes = await db.execute({
-      sql: `SELECT k.*, s.name as sender_name, s.avatar_image as sender_avatar, r.name as receiver_name 
-            FROM kudos k 
-            JOIN users s ON k.sender_id = s.id 
-            JOIN users r ON k.receiver_id = r.id 
-            ORDER BY k.created_at DESC LIMIT 10`,
-    });
-    const feed = kudosRes.rows.map(r => ({
-      id: r.id, from: r.sender_name, to: r.receiver_name, value: r.value_tag, msg: r.message, likes: r.likes_count, time: 'Baru saja', avatarImage: r.sender_avatar
-    }));
 
     // Fetch Skills
     const skillsRes = await db.execute({
@@ -271,7 +260,7 @@ export async function GET(request: Request) {
       habits,
       goals,
       surveys,
-      feed,
+      feed: [],
       skills,
       learning: [],
       wellbeing: { dims: [], programs: [], dailyPrompt: "" },

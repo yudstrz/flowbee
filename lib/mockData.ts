@@ -94,11 +94,6 @@ export const HP_GOALS = [
   { id: 3, title: 'Mentoring 2 junior designer', progress: 55, alignment: 78, owner: 'Sari', due: 'Ongoing', tone: 'lavender', metric: '11 / 20 sessions', scope: 'personal' },
 ];
 
-export const HP_FEED = [
-  { id: 1, from: 'Budi Santoso', to: 'Sari Wijaya', value: 'Collaboration', msg: 'Makasih banyak Sari — handoff kemarin super jelas, tim eng langsung bisa jalan tanpa blocker. 🌱', likes: 12, time: '2 jam lalu' },
-  { id: 2, from: 'Anya Putri', to: 'Rizky Hidayat', value: 'Innovation', msg: 'Ide prototype Rizky buat checkout flow bener-bener ngubah persepsi user. Kreatif banget!', likes: 8, time: '5 jam lalu' },
-  { id: 3, from: 'Dian Kusuma', to: 'Tim Research', value: 'Respect', msg: 'Makasih tim research udah dengerin concern designer sebelum finalize insight report.', likes: 21, time: 'Kemarin' },
-];
 
 export const HP_SKILLS = [
   { name: 'User Research', current: 70, target: 85 },
@@ -154,17 +149,6 @@ export const MANAGER_TEAM_GOALS = [
   { id: 3, title: 'User Research Q2', progress: 55, members: 2, due: '30 May 2026 18:00', dueISO: '2026-05-30T18:00', tone: 'lavender', onTrack: true },
 ];
 
-export const MANAGER_ONE_ON_ONES = [
-  { id: 1, with: 'Sari Wijaya', date: 'Rabu, 25 Apr', time: '14:00', topic: 'Career growth & Q2 goals', done: false, meetLink: 'https://meet.google.com/abc-defg-hij' },
-  { id: 2, with: 'Dian Kusuma', date: 'Kamis, 26 Apr', time: '10:00', topic: 'Check-in wellbeing & workload', done: false, urgent: true, meetLink: 'https://meet.google.com/xyz-pdqr-mno' },
-  { id: 3, with: 'Rizky Hidayat', date: 'Jumat, 27 Apr', time: '15:00', topic: 'DS Migration update & blockers', done: false, meetLink: 'https://meet.google.com/uvw-stuv-wxyz' },
-];
-
-export const MANAGER_TEAM_FEED = [
-  { id: 1, from: 'Budi Santoso', to: 'Sari Wijaya', value: 'Ownership', msg: 'Sari selesaikan handoff lebih awal dari deadline — tim engineering sangat terbantu. Luar biasa! 🌟', likes: 15, time: '1 jam lalu' },
-  { id: 2, from: 'Anya Putri', to: 'Rizky Hidayat', value: 'Innovation', msg: 'Rizky datang dengan solusi component library yang bikin workflow 30% lebih cepat!', likes: 22, time: '3 jam lalu' },
-  { id: 3, from: 'Budi Santoso', to: 'Dian Kusuma', value: 'Growth', msg: 'Dian terus berkembang dalam metodologi research — insight-nya makin tajam setiap sprint.', likes: 9, time: 'Kemarin' },
-];
 
 export const MANAGER_SKILLS = [
   { name: 'Strategic Thinking', current: 78, target: 90 },
@@ -250,11 +234,6 @@ export const HR_LD_PROGRAMS = [
   { id: 4, title: 'Inclusive Communication', enrolled: 45, completed: 30, total: 60, due: '31 Mei', tone: 'lavender', category: 'Culture' },
 ];
 
-export const HR_FEED = [
-  { id: 1, from: 'Budi Santoso', to: 'Sari Wijaya', value: 'Collaboration', msg: 'Sari luar biasa dalam kolaborasi lintas divisi minggu ini!', likes: 18, time: '1 jam lalu', dept: 'Digital Experience' },
-  { id: 2, from: 'Maya Sari', to: 'Tim Engineering', value: 'Respect', msg: 'Engineering team tetap solid di tengah sprint yang padat. Salut!', likes: 31, time: '3 jam lalu', dept: 'Engineering' },
-  { id: 3, from: 'Laras Putri', to: 'Hendra Wijaya', value: 'Ownership', msg: 'Hendra sigap handle incident production tengah malam. Dedication tinggi!', likes: 24, time: 'Kemarin', dept: 'Engineering' },
-];
 
 export const HR_WELLBEING_DIMS = [
   { key: 'mental', label: 'Mental Org', score: 71, tone: 'sage', trend: '+2' },

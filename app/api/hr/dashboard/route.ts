@@ -62,8 +62,6 @@ export async function GET() {
     const programs = learningRes.rows.map(r => ({
       id: r.id,
       title: r.title,
-      enrolled: 40 + Math.floor(Math.random() * 60), // Random for now
-      completed: 10 + Math.floor(Math.random() * 30),
       tone: r.tone || 'blue'
     }));
 
